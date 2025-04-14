@@ -82,10 +82,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       include: {
         product: {
           select: {
-            name: true,
+            title: true,
             description: true,
             basePrice: true,
-            currency: true
+            commissionRate: true,
+            commissionType: true,
+            imageUrl: true,
+            thumbnailUrl: true,
+            galleryUrls: true
           }
         }
       }
