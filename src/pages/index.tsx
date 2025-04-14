@@ -4,7 +4,7 @@ import prisma from '@/lib/prisma';
 import { templates } from '@/templates';
 import { Decimal } from '@prisma/client/runtime/library';
 
-interface Product {
+interface DbProduct {
   id: string;
   title: string;
   description: string;
@@ -25,10 +25,14 @@ interface Product {
   featured: boolean;
   visibility: string;
   categoryId: string | null;
-  createdAt: string;
+  createdAt: Date;
   _count: {
     landingPages: number;
   };
+}
+
+interface Product extends Omit<DbProduct, 'createdAt'> {
+  createdAt: string;
 }
 
 interface Props {
@@ -150,7 +154,7 @@ const Home: NextPage<Props> = ({ products }) => {
   );
 };
 
-export const getServerSideProps: GetServerSideProps = async () => {
+export const getServerSideProps: GetServerSideProps<Props> = async () => {
   try {
     const products = await prisma.product.findMany({
       include: {
@@ -167,7 +171,7 @@ export const getServerSideProps: GetServerSideProps = async () => {
 
     return {
       props: {
-        products: products.map(product => ({
+        products: products.map((product: DbProduct) => ({
           ...product,
           createdAt: product.createdAt.toISOString()
         }))
