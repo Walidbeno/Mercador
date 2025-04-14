@@ -1,0 +1,63 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Product {
+  id               String    @id @default(uuid())
+  mercacioId       String    @unique // Reference to Mercacio APP product ID
+  name             String
+  description      String    @db.Text
+  basePrice        Decimal   @db.Decimal(10, 2)
+  currency         String    @default("EUR")
+  metadata         Json?     // Flexible product data (images, variants, etc)
+  landingPages     LandingPage[]
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([mercacioId])
+  @@map("products")
+}
+
+model LandingPage {
+  id          String    @id @default(uuid())
+  productId   String
+  product     Product   @relation(fields: [productId], references: [id])
+  slug        String    @unique // URL slug for the landing page
+  template    String    @db.Text  // Template content/structure
+  customData  Json?     // Custom data for this landing page (pricing, locale, etc)
+  isActive    Boolean   @default(true)
+  locale      String    @default("en") // Language/country code
+  affiliateId String?   // Optional affiliate ID
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([productId, locale, affiliateId])
+  @@index([slug])
+  @@map("landing_pages")
+}
+
+// Simple API key management for secure communication
+model ApiKey {
+  id          String    @id @default(uuid())
+  name        String    // Purpose/description of the key
+  key         String    @unique
+  isActive    Boolean   @default(true)
+  lastUsed    DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([key])
+  @@map("api_keys")
+}
