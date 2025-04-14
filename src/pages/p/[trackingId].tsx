@@ -1,18 +1,20 @@
 import { GetServerSideProps } from 'next';
 import prisma from '@/lib/prisma';
 import { Decimal } from '@prisma/client/runtime/library';
+import { renderTemplate } from '@/lib/templateRenderer';
+import { TemplateType } from '@/templates';
 
 interface Props {
   landingPage: {
-    template: string;
+    template: TemplateType;
     settings: any;
     customData: any;
     product: {
       title: string;
       description: string;
       shortDescription: string | null;
-      basePrice: Decimal;
-      commissionRate: Decimal;
+      basePrice: string;
+      commissionRate: string;
       commissionType: string;
       imageUrl: string | null;
       thumbnailUrl: string | null;
@@ -22,20 +24,25 @@ interface Props {
 }
 
 export default function LandingPage({ landingPage }: Props) {
-  // This is a basic example - you'll want to use the template and settings
-  // to render the page according to the template structure
+  const templateHtml = renderTemplate(landingPage.template, {
+    ...landingPage.product,
+    basePrice: Number(landingPage.product.basePrice),
+    commissionRate: Number(landingPage.product.commissionRate)
+  });
+
   return (
     <div 
-      dangerouslySetInnerHTML={{ __html: landingPage.template }}
+      dangerouslySetInnerHTML={{ __html: templateHtml }}
       data-settings={JSON.stringify(landingPage.settings)}
       data-custom-data={JSON.stringify(landingPage.customData)}
     />
   );
 }
 
-export const getServerSideProps: GetServerSideProps = async ({ params }) => {
+export const getServerSideProps: GetServerSideProps = async ({ params, query }) => {
   try {
     const trackingId = params?.trackingId as string;
+    const preview = query.preview === 'true';
 
     const landingPage = await prisma.landingPage.findUnique({
       where: { 
@@ -68,8 +75,10 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
       };
     }
 
-    // Track the visit here
-    // You can implement visit tracking, analytics, etc.
+    // Track the visit here (only if not preview)
+    if (!preview) {
+      // TODO: Implement visit tracking
+    }
 
     // Convert Decimal to string for JSON serialization
     const serializedPage = {

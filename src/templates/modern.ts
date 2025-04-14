@@ -1,11 +1,11 @@
 export const modernTemplate = (product: {
   title: string;
   description: string;
-  shortDescription?: string;
-  imageUrl?: string;
+  shortDescription?: string | null;
+  imageUrl?: string | null;
   basePrice: number;
   commissionRate: number;
-  thumbnailUrl?: string;
+  thumbnailUrl?: string | null;
   galleryUrls?: string[];
 }) => `
 <!DOCTYPE html>
