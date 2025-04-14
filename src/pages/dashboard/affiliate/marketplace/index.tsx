@@ -1,57 +1,49 @@
-import { NextPage } from 'next';
+import { GetServerSideProps, NextPage } from 'next';
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
+import prisma from '@/lib/prisma';
+import { Decimal } from '@prisma/client/runtime/library';
 
 interface Product {
   id: string;
   title: string;
-  thumbnailUrl: string;
-  basePrice: number;
-  commissionRate: number;
-  countries: string[];
+  thumbnailUrl: string | null;
+  basePrice: Decimal;
+  commissionRate: Decimal;
+  status: string;
+  visibility: string;
 }
 
-const formatPrice = (price: number): string => {
+interface Props {
+  products: Product[];
+}
+
+const formatPrice = (price: Decimal): string => {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'EUR'
-  }).format(price);
+  }).format(Number(price));
 };
 
-const calculateCommission = (price: number, rate: number): number => {
-  return price * (rate / 100);
+const calculateCommission = (price: Decimal, rate: Decimal): number => {
+  return Number(price) * (Number(rate) / 100);
 };
 
-const formatCommission = (commission: number, price: number): string => {
-  const percentage = ((commission / price) * 100).toFixed(0);
+const formatCommission = (commission: number, price: Decimal): string => {
+  const percentage = ((commission / Number(price)) * 100).toFixed(0);
   return `${percentage}%`;
 };
 
-const renderCountryFlags = (countries: string[]): string => {
-  return countries.join(', ');
-};
-
-const MarketplacePage: NextPage = () => {
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
-
-  useEffect(() => {
-    // Fetch products here
-  }, []);
-
+const MarketplacePage: NextPage<Props> = ({ products }) => {
   return (
     <div className="container mx-auto px-4 py-8">
-      {/* Products Grid */}
-      {filteredProducts.length > 0 ? (
+      {products.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {filteredProducts.map((product) => (
+          {products.map((product) => (
             <div key={product.id} className="bg-gray-50 rounded-lg hover:shadow-lg hover:shadow-gray-300 hover:bg-white transition-all duration-300 overflow-hidden">
               <Link href={`/dashboard/affiliate/marketplace/products/${product.id}`}
                     className="block w-full h-full"
               > 
                 <div className="h-48 relative overflow-hidden">
-                  <div className="bg-black/75 text-white text-sm rounded-lg px-2 py-1 absolute bottom-2 left-2">
-                    {renderCountryFlags(product.countries)}
-                  </div>
                   <div className="bg-black/75 text-white text-sm rounded-lg px-2 py-1 absolute bottom-2 right-2">
                     <span className="font-medium">
                       {formatCommission(calculateCommission(product.basePrice, product.commissionRate), product.basePrice)}
@@ -82,6 +74,42 @@ const MarketplacePage: NextPage = () => {
       )}
     </div>
   );
+};
+
+export const getServerSideProps: GetServerSideProps<Props> = async () => {
+  try {
+    const products = await prisma.product.findMany({
+      where: {
+        status: 'active',
+        visibility: 'public'
+      },
+      select: {
+        id: true,
+        title: true,
+        thumbnailUrl: true,
+        basePrice: true,
+        commissionRate: true,
+        status: true,
+        visibility: true
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
+
+    return {
+      props: {
+        products: JSON.parse(JSON.stringify(products)) // Serialize Decimal objects
+      }
+    };
+  } catch (error) {
+    console.error('Error fetching products:', error);
+    return {
+      props: {
+        products: []
+      }
+    };
+  }
 };
 
 export default MarketplacePage; 
