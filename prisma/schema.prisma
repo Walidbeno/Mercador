@@ -14,6 +14,20 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Store {
+  id          String    @id @default(uuid())
+  name        String
+  domain      String    @unique
+  description String?   @db.Text
+  settings    Json?     // Store settings (colors, fonts, etc)
+  products    Product[]
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("stores")
+}
+
 model Product {
   id               String    @id @default(uuid())
   mercacioId       String    @unique // Reference to Mercacio APP product ID
@@ -31,20 +45,23 @@ model Product {
 }
 
 model LandingPage {
-  id          String    @id @default(uuid())
-  productId   String
-  product     Product   @relation(fields: [productId], references: [id])
-  slug        String    @unique // URL slug for the landing page
-  template    String    @db.Text  // Template content/structure
-  customData  Json?     // Custom data for this landing page (pricing, locale, etc)
-  isActive    Boolean   @default(true)
-  locale      String    @default("en") // Language/country code
-  affiliateId String?   // Optional affiliate ID
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id              String    @id @default(uuid())
+  productId       String
+  product         Product   @relation(fields: [productId], references: [id])
+  mercacioUserId  String    // User ID from Mercacio APP
+  trackingId      String    @unique // Combination of mercacioUserId-mercacioProductId
+  template        String    @db.Text  // Template content/structure
+  settings        Json?     // Page settings (colors, fonts, tracking pixels, etc)
+  customData      Json?     // Custom data for this landing page (pricing, locale, etc)
+  isActive        Boolean   @default(true)
+  locale          String    @default("en") // Language/country code
+  affiliateId     String?   // Optional affiliate ID
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
-  @@unique([productId, locale, affiliateId])
-  @@index([slug])
+  @@unique([productId, mercacioUserId, locale])
+  @@index([trackingId])
+  @@index([mercacioUserId])
   @@map("landing_pages")
 }
 

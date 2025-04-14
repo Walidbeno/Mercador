@@ -9,6 +9,7 @@ A Next.js application that generates and serves dynamic landing pages for produc
 - Affiliate customization
 - API-driven product management
 - Template-based page rendering
+- User-specific tracking URLs
 
 ## Tech Stack
 
@@ -16,20 +17,21 @@ A Next.js application that generates and serves dynamic landing pages for produc
 - TypeScript
 - Prisma (PostgreSQL)
 - TailwindCSS
+- Vercel (Deployment)
 
 ## Getting Started
 
 ### Prerequisites
 
 - Node.js 16+
-- PostgreSQL
+- PostgreSQL (or use Neon for serverless PostgreSQL)
 - npm or yarn
 
 ### Installation
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/mercador.git
+git clone https://github.com/Walidbeno/Mercador.git
 cd mercador
 ```
 
@@ -42,11 +44,15 @@ npm install
 ```bash
 cp .env.example .env
 ```
-Then edit `.env` with your database credentials.
+Then edit `.env` with your database credentials and other environment variables:
+```env
+DATABASE_URL="your-postgresql-url"
+JWT_SECRET="your-jwt-secret"
+```
 
 4. Run database migrations:
 ```bash
-npx prisma migrate dev
+npm run prisma:migrate
 ```
 
 5. Start the development server:
@@ -56,26 +62,32 @@ npm run dev
 
 ### API Usage
 
-To create a product with landing pages:
+To create a landing page:
 
 ```bash
-curl -X POST https://your-domain.com/api/products/create \
+curl -X POST https://mercacio.net/api/landing-pages/create \
   -H "Content-Type: application/json" \
   -H "x-api-key: your-api-key" \
   -d '{
-    "mercacioId": "product-123",
-    "name": "Amazing Product",
-    "description": "Product description",
-    "basePrice": 99.99,
-    "currency": "EUR",
-    "landingPages": [
-      {
-        "locale": "es",
-        "template": "<template-content>",
-        "customData": {}
-      }
-    ]
+    "productId": "product-uuid",
+    "mercacioUserId": "user123",
+    "mercacioProductId": "prod456",
+    "template": "<template-content>",
+    "settings": {
+      "theme": "light",
+      "primaryColor": "#FF5733"
+    },
+    "locale": "es"
   }'
+```
+
+Response:
+```json
+{
+  "landingPage": { ... },
+  "url": "https://mercacio.net/p/user123-prod456",
+  "trackingId": "user123-prod456"
+}
 ```
 
 ## Project Structure
@@ -86,10 +98,22 @@ curl -X POST https://your-domain.com/api/products/create \
 ├── src/
 │   ├── pages/          
 │   │   ├── api/        # API endpoints
-│   │   └── [slug].tsx  # Dynamic landing pages
+│   │   └── p/          # Dynamic landing pages
 │   └── lib/            # Utilities
 └── public/             # Static assets
 ```
+
+## Deployment
+
+This project is deployed on Vercel. To deploy your own instance:
+
+1. Fork this repository
+2. Create a new project on Vercel
+3. Connect your forked repository
+4. Add the following environment variables in Vercel:
+   - `DATABASE_URL`
+   - `JWT_SECRET`
+5. Deploy!
 
 ## Contributing
 
