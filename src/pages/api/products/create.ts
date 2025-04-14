@@ -21,67 +21,88 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     const {
-      mercacioId,
-      name,
+      id,
+      title,
       description,
+      shortDescription,
+      sku,
       basePrice,
-      currency = 'EUR',
-      metadata,
-      landingPages = []
+      vatRate,
+      vatIncluded,
+      commissionRate,
+      commissionType = 'percentage',
+      stockQuantity = 0,
+      thumbnailUrl,
+      imageUrl,
+      galleryUrls = [],
+      vendorName,
+      salesPageUrl,
+      status = 'draft',
+      featured = false,
+      visibility = 'public',
+      categoryId
     } = req.body;
+
+    // Validate required fields
+    if (!id || !title || !description || !basePrice || !commissionRate) {
+      return res.status(400).json({ 
+        error: 'Required fields missing: id, title, description, basePrice, commissionRate' 
+      });
+    }
 
     // Create or update product
     const product = await prisma.product.upsert({
-      where: { mercacioId },
+      where: { id },
       create: {
-        mercacioId,
-        name,
+        id,
+        title,
         description,
+        shortDescription,
+        sku,
         basePrice,
-        currency,
-        metadata
+        vatRate,
+        vatIncluded,
+        commissionRate,
+        commissionType,
+        stockQuantity,
+        thumbnailUrl,
+        imageUrl,
+        galleryUrls,
+        vendorName,
+        salesPageUrl,
+        status,
+        featured,
+        visibility,
+        categoryId
       },
       update: {
-        name,
+        title,
         description,
+        shortDescription,
+        sku,
         basePrice,
-        currency,
-        metadata
+        vatRate,
+        vatIncluded,
+        commissionRate,
+        commissionType,
+        stockQuantity,
+        thumbnailUrl,
+        imageUrl,
+        galleryUrls,
+        vendorName,
+        salesPageUrl,
+        status,
+        featured,
+        visibility,
+        categoryId
       }
     });
 
-    // Create landing pages
-    const createdPages = await Promise.all(
-      landingPages.map(async (page: {
-        mercacioUserId: string;
-        template: string;
-        locale: string;
-        affiliateId?: string;
-        customData?: any;
-        settings?: any;
-      }) => {
-        const trackingId = `${page.mercacioUserId}-${mercacioId}`;
-        
-        return prisma.landingPage.create({
-          data: {
-            productId: product.id,
-            mercacioUserId: page.mercacioUserId,
-            trackingId,
-            template: page.template,
-            locale: page.locale,
-            affiliateId: page.affiliateId,
-            customData: page.customData,
-            settings: page.settings,
-            isActive: true
-          }
-        });
-      })
-    );
-
     return res.status(200).json({
-      product,
-      landingPages: createdPages
+      message: 'Product synchronized successfully',
+      product
     });
+
   } catch (error) {
     console.error('Product creation error:', error);
     return res.status(500).json({ error: 'Failed to create product' });
