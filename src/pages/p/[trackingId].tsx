@@ -1,5 +1,6 @@
 import { GetServerSideProps } from 'next';
 import prisma from '@/lib/prisma';
+import { Decimal } from '@prisma/client/runtime/library';
 
 interface Props {
   landingPage: {
@@ -7,10 +8,15 @@ interface Props {
     settings: any;
     customData: any;
     product: {
-      name: string;
+      title: string;
       description: string;
-      basePrice: number;
-      currency: string;
+      shortDescription: string | null;
+      basePrice: Decimal;
+      commissionRate: Decimal;
+      commissionType: string;
+      imageUrl: string | null;
+      thumbnailUrl: string | null;
+      galleryUrls: string[];
     };
   };
 }
@@ -42,10 +48,15 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
         customData: true,
         product: {
           select: {
-            name: true,
+            title: true,
             description: true,
+            shortDescription: true,
             basePrice: true,
-            currency: true
+            commissionRate: true,
+            commissionType: true,
+            imageUrl: true,
+            thumbnailUrl: true,
+            galleryUrls: true
           }
         }
       }
@@ -60,12 +71,13 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
     // Track the visit here
     // You can implement visit tracking, analytics, etc.
 
-    // Convert Decimal to number for JSON serialization
+    // Convert Decimal to string for JSON serialization
     const serializedPage = {
       ...landingPage,
       product: {
         ...landingPage.product,
-        basePrice: Number(landingPage.product.basePrice)
+        basePrice: landingPage.product.basePrice.toString(),
+        commissionRate: landingPage.product.commissionRate.toString()
       }
     };
 
