@@ -64,3 +64,30 @@ model ApiKey {
   @@index([key])
   @@map("api_keys")
 }
+
+model User {
+  id          String    @id @default(uuid())
+  mercacioId  String    @unique  // Reference to Mercacio APP user ID
+  email       String    @unique
+  name        String
+  role        String    @default("USER")  // ADMIN, AFFILIATE, or USER
+  metadata    Json?     // Additional user data
+  sessions    Session[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([mercacioId])
+  @@map("users")
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  token     String   @unique
+  expires   DateTime
+  createdAt DateTime @default(now())
+
+  @@index([token])
+  @@map("sessions")
+}
