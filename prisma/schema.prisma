@@ -15,18 +15,30 @@ datasource db {
 }
 
 model Product {
-  id               String    @id @default(uuid())
-  mercacioId       String    @unique // Reference to Mercacio APP product ID
-  name             String
+  id               String    @id // Using the ID from Mercacio store
+  title            String
   description      String    @db.Text
-  basePrice        Decimal   @db.Decimal(10, 2)
-  currency         String    @default("EUR")
-  metadata         Json?     // Flexible product data (images, variants, etc)
+  shortDescription String?   @db.Text @map("short_description")
+  sku              String?
+  basePrice        Decimal   @db.Decimal(10, 2) @map("base_price")
+  vatRate          Decimal?  @db.Decimal(5, 2) @map("vat_rate")
+  vatIncluded      Boolean   @default(false) @map("vat_included")
+  commissionRate   Decimal   @db.Decimal(5, 2) @map("commission_rate")
+  commissionType   String    @default("percentage") @map("commission_type")
+  stockQuantity    Int       @default(0) @map("stock_quantity")
+  thumbnailUrl     String?   @map("thumbnail_url")
+  imageUrl         String?   @map("image_url")
+  galleryUrls      String[]  @map("gallery_urls")
+  vendorName       String?   @map("vendor_name")
+  salesPageUrl     String?   @map("sales_page_url")
+  status           String    @default("draft")
+  featured         Boolean   @default(false)
+  visibility       String    @default("public")
+  categoryId       String?   @map("category_id")
   landingPages     LandingPage[]
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
 
-  @@index([mercacioId])
   @@map("products")
 }
 
@@ -35,7 +47,7 @@ model LandingPage {
   productId       String
   product         Product   @relation(fields: [productId], references: [id])
   mercacioUserId  String    // User ID from Mercacio APP
-  trackingId      String    @unique // Combination of mercacioUserId-mercacioProductId
+  trackingId      String    @unique // Affiliate tracking ID from mercacio.store
   template        String    @db.Text  // Template content/structure
   settings        Json?     // Page settings (colors, fonts, tracking pixels, etc)
   customData      Json?     // Custom data for this landing page (pricing, locale, etc)
@@ -45,7 +57,6 @@ model LandingPage {
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
-  @@unique([productId, mercacioUserId, locale])
   @@index([trackingId])
   @@index([mercacioUserId])
   @@map("landing_pages")

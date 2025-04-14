@@ -27,51 +27,57 @@ export default function LandingPage({ landingPage }: Props) {
   );
 }
 
-export const getServerSideProps: GetServerSideProps = async ({ params, query }) => {
-  const trackingId = params?.trackingId as string;
-  const affiliateId = query.aff as string | undefined;
+export const getServerSideProps: GetServerSideProps = async ({ params }) => {
+  try {
+    const trackingId = params?.trackingId as string;
 
-  const landingPage = await prisma.landingPage.findUnique({
-    where: { 
-      trackingId,
-      ...(affiliateId ? { affiliateId } : {})
-    },
-    select: {
-      template: true,
-      settings: true,
-      customData: true,
-      product: {
-        select: {
-          name: true,
-          description: true,
-          basePrice: true,
-          currency: true
+    const landingPage = await prisma.landingPage.findUnique({
+      where: { 
+        trackingId,
+        isActive: true
+      },
+      select: {
+        template: true,
+        settings: true,
+        customData: true,
+        product: {
+          select: {
+            name: true,
+            description: true,
+            basePrice: true,
+            currency: true
+          }
         }
       }
-    }
-  });
+    });
 
-  if (!landingPage) {
+    if (!landingPage) {
+      return {
+        notFound: true
+      };
+    }
+
+    // Track the visit here
+    // You can implement visit tracking, analytics, etc.
+
+    // Convert Decimal to number for JSON serialization
+    const serializedPage = {
+      ...landingPage,
+      product: {
+        ...landingPage.product,
+        basePrice: Number(landingPage.product.basePrice)
+      }
+    };
+
+    return {
+      props: {
+        landingPage: serializedPage
+      }
+    };
+  } catch (error) {
+    console.error('Error fetching landing page:', error);
     return {
       notFound: true
     };
   }
-
-  // Track the visit here
-  // You can implement visit tracking, analytics, etc.
-
-  // Convert Decimal to number for JSON serialization
-  const serializedPage = {
-    ...landingPage,
-    product: {
-      ...landingPage.product,
-      basePrice: Number(landingPage.product.basePrice)
-    }
-  };
-
-  return {
-    props: {
-      landingPage: serializedPage
-    }
-  };
 }; 
