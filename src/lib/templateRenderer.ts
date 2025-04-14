@@ -1,26 +1,23 @@
 import { modernTemplate, minimalTemplate, TemplateType } from '@/templates';
-import { PrismaClient } from '../../../generated/prisma';
 
-type Product = Parameters<PrismaClient['product']['create']>[0]['data'];
+type Product = {
+  title: string;
+  description: string;
+  shortDescription?: string;
+  imageUrl?: string;
+  thumbnailUrl?: string;
+  basePrice: number;
+  commissionRate: number;
+  galleryUrls?: string[];
+};
 
-export const renderTemplate = (template: TemplateType, product: Product): string => {
-  const templateData = {
-    title: product.title,
-    description: product.description,
-    shortDescription: product.shortDescription || '',
-    imageUrl: product.imageUrl || '',
-    thumbnailUrl: product.thumbnailUrl || '',
-    basePrice: Number(product.basePrice),
-    commissionRate: Number(product.commissionRate),
-    galleryUrls: product.galleryUrls || []
-  };
-
+export function renderTemplate(template: TemplateType, product: Product): string {
   switch (template) {
     case 'modern':
-      return modernTemplate(templateData);
+      return modernTemplate(product);
     case 'minimal':
-      return minimalTemplate(templateData);
+      return minimalTemplate(product);
     default:
       throw new Error(`Unknown template: ${template}`);
   }
-}; 
+} 
