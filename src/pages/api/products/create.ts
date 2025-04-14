@@ -53,21 +53,26 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Create landing pages
     const createdPages = await Promise.all(
       landingPages.map(async (page: {
+        mercacioUserId: string;
         template: string;
         locale: string;
         affiliateId?: string;
         customData?: any;
+        settings?: any;
       }) => {
-        const slug = generateSlug(name, page.locale, page.affiliateId);
+        const trackingId = `${page.mercacioUserId}-${mercacioId}`;
         
         return prisma.landingPage.create({
           data: {
             productId: product.id,
-            slug,
+            mercacioUserId: page.mercacioUserId,
+            trackingId,
             template: page.template,
             locale: page.locale,
             affiliateId: page.affiliateId,
-            customData: page.customData
+            customData: page.customData,
+            settings: page.settings,
+            isActive: true
           }
         });
       })
@@ -81,18 +86,4 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     console.error('Product creation error:', error);
     return res.status(500).json({ error: 'Failed to create product' });
   }
-}
-
-function generateSlug(name: string, locale: string, affiliateId?: string): string {
-  const base = name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '');
-  
-  const parts = [base, locale];
-  if (affiliateId) {
-    parts.push(affiliateId);
-  }
-  
-  return parts.join('-');
 } 
