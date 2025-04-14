@@ -9,15 +9,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     // Validate API key
     const apiKey = req.body.apiKey || req.headers['x-api-key'];
-    if (!apiKey) {
-      return res.status(401).json({ error: 'API key required' });
-    }
-
-    const validApiKey = await prisma.apiKey.findFirst({
-      where: { key: apiKey as string, isActive: true }
-    });
-
-    if (!validApiKey) {
+    if (!apiKey || apiKey !== process.env.MERCACIO_API_KEY) {
       return res.status(401).json({ error: 'Invalid API key' });
     }
 
