@@ -1,127 +1,149 @@
 import { GetServerSideProps, NextPage } from 'next';
 import Link from 'next/link';
 import prisma from '@/lib/prisma';
+import { templates } from '@/templates';
+import { Decimal } from '@prisma/client/runtime/library';
 
-interface LandingPage {
+interface Product {
   id: string;
-  trackingId: string;
-  locale: string;
-  isActive: boolean;
-  createdAt: Date;
-  product: {
-    name: string;
-    basePrice: number;
-    currency: string;
+  title: string;
+  description: string;
+  shortDescription: string | null;
+  sku: string | null;
+  basePrice: Decimal;
+  vatRate: Decimal | null;
+  vatIncluded: boolean;
+  commissionRate: Decimal;
+  commissionType: string;
+  stockQuantity: number;
+  thumbnailUrl: string | null;
+  imageUrl: string | null;
+  galleryUrls: string[];
+  vendorName: string | null;
+  salesPageUrl: string | null;
+  status: string;
+  featured: boolean;
+  visibility: string;
+  categoryId: string | null;
+  createdAt: string;
+  _count: {
+    landingPages: number;
   };
 }
 
 interface Props {
-  landingPages: LandingPage[];
+  products: Product[];
 }
 
-const formatPrice = (price: number, currency: string): string => {
+const formatPrice = (price: Decimal): string => {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
-    currency: currency
-  }).format(price);
+    currency: 'EUR'
+  }).format(Number(price));
 };
 
-const formatDate = (date: Date): string => {
-  return new Intl.DateTimeFormat('en-US', {
+const formatDate = (dateStr: string): string => {
+  return new Date(dateStr).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  }).format(new Date(date));
+    day: 'numeric'
+  });
 };
 
-const Home: NextPage<Props> = ({ landingPages }) => {
+const Home: NextPage<Props> = ({ products }) => {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
         <div className="text-center">
           <h1 className="text-3xl font-bold text-gray-900 sm:text-4xl">
-            Mercacio Landing Pages
+            Mercacio Products
           </h1>
           <p className="mt-3 max-w-2xl mx-auto text-xl text-gray-500 sm:mt-4">
-            All active landing pages generated on mercacio.net
+            Browse and preview landing page templates for our products
           </p>
         </div>
 
-        <div className="mt-12">
-          <div className="bg-white shadow overflow-hidden sm:rounded-md">
-            {landingPages.length > 0 ? (
-              <ul className="divide-y divide-gray-200">
-                {landingPages.map((page) => (
-                  <li key={page.id}>
-                    <Link 
-                      href={`https://www.mercacio.net/p/${page.trackingId}`}
-                      className="block hover:bg-gray-50"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <div className="px-4 py-4 sm:px-6">
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-indigo-600 truncate">
-                              {page.product.name}
-                            </p>
-                            <p className="mt-2 flex items-center text-sm text-gray-500">
-                              <span className="truncate">ID: {page.trackingId}</span>
-                            </p>
-                          </div>
-                          <div className="ml-4 flex-shrink-0 flex items-center space-x-4">
-                            <p className="text-sm text-gray-900 font-medium">
-                              {formatPrice(page.product.basePrice, page.product.currency)}
-                            </p>
-                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                              page.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                            }`}>
-                              {page.isActive ? 'Active' : 'Inactive'}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="mt-2 sm:flex sm:justify-between">
-                          <div className="sm:flex">
-                            <p className="flex items-center text-sm text-gray-500">
-                              Locale: {page.locale.toUpperCase()}
-                            </p>
-                          </div>
-                          <div className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
-                            <p>
-                              Created: {formatDate(page.createdAt)}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <div className="text-center py-12">
-                <svg
-                  className="mx-auto h-12 w-12 text-gray-400"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                  />
-                </svg>
-                <h3 className="mt-2 text-sm font-medium text-gray-900">No landing pages</h3>
-                <p className="mt-1 text-sm text-gray-500">
-                  No active landing pages found.
-                </p>
+        <div className="mt-12 grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+          {products.map((product) => (
+            <div
+              key={product.id}
+              className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
+            >
+              <div className="h-48 overflow-hidden relative">
+                <img
+                  src={product.imageUrl || product.thumbnailUrl || '/images/placeholder.jpg'}
+                  alt={product.title}
+                  className="w-full h-full object-cover"
+                />
+                {product.featured && (
+                  <div className="absolute top-2 right-2 bg-yellow-400 text-black px-2 py-1 rounded-md text-sm font-medium">
+                    Featured
+                  </div>
+                )}
               </div>
-            )}
-          </div>
+
+              <div className="p-6">
+                <h2 className="text-xl font-semibold text-gray-900 mb-2 line-clamp-1">
+                  {product.title}
+                </h2>
+                <p className="text-gray-600 mb-4 line-clamp-2">
+                  {product.shortDescription || product.description}
+                </p>
+
+                <div className="flex items-center justify-between mb-4">
+                  <div className="text-2xl font-bold text-gray-900">
+                    {formatPrice(product.basePrice)}
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    Commission: {product.commissionRate.toString()}%
+                    {product.commissionType !== 'percentage' && ` (${product.commissionType})`}
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between text-sm text-gray-500">
+                    <span>Landing Pages:</span>
+                    <span className="font-medium">{product._count.landingPages}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm text-gray-500">
+                    <span>Status:</span>
+                    <span className={`font-medium ${
+                      product.status === 'active' ? 'text-green-600' : 'text-gray-600'
+                    }`}>
+                      {product.status}
+                    </span>
+                  </div>
+                  {product.vendorName && (
+                    <div className="flex items-center justify-between text-sm text-gray-500">
+                      <span>Vendor:</span>
+                      <span className="font-medium">{product.vendorName}</span>
+                    </div>
+                  )}
+                  <div className="flex items-center justify-between text-sm text-gray-500">
+                    <span>Stock:</span>
+                    <span className="font-medium">{product.stockQuantity}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm text-gray-500">
+                    <span>Added:</span>
+                    <span>{formatDate(product.createdAt)}</span>
+                  </div>
+                </div>
+
+                <div className="mt-6 grid grid-cols-2 gap-3">
+                  {Object.keys(templates).map((templateName) => (
+                    <Link
+                      key={templateName}
+                      href={`/api/templates/preview?productId=${product.id}&template=${templateName}`}
+                      target="_blank"
+                      className="text-center bg-indigo-50 text-indigo-600 px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-100 transition-colors"
+                    >
+                      {templateName.charAt(0).toUpperCase() + templateName.slice(1)}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>
@@ -130,51 +152,32 @@ const Home: NextPage<Props> = ({ landingPages }) => {
 
 export const getServerSideProps: GetServerSideProps = async () => {
   try {
-    const landingPages = await prisma.landingPage.findMany({
-      where: {
-        isActive: true
-      },
-      select: {
-        id: true,
-        trackingId: true,
-        locale: true,
-        isActive: true,
-        createdAt: true,
-        product: {
+    const products = await prisma.product.findMany({
+      include: {
+        _count: {
           select: {
-            name: true,
-            basePrice: true,
-            currency: true
+            landingPages: true
           }
         }
       },
-      orderBy: {
-        createdAt: 'desc'
-      }
+      orderBy: [
+        { createdAt: 'desc' }
+      ]
     });
-
-    // Handle Decimal type for basePrice
-    const serializedPages = landingPages.map(page => ({
-      ...page,
-      createdAt: page.createdAt.toISOString(),
-      product: {
-        ...page.product,
-        basePrice: Number(page.product.basePrice)
-      }
-    }));
 
     return {
       props: {
-        landingPages: serializedPages
+        products: products.map(product => ({
+          ...product,
+          createdAt: product.createdAt.toISOString()
+        }))
       }
     };
   } catch (error) {
-    console.error('Error fetching landing pages:', error);
-    
-    // Return empty array instead of failing
+    console.error('Error fetching products:', error);
     return {
       props: {
-        landingPages: []
+        products: []
       }
     };
   }
