@@ -14,20 +14,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Store {
-  id          String    @id @default(uuid())
-  name        String
-  domain      String    @unique
-  description String?   @db.Text
-  settings    Json?     // Store settings (colors, fonts, etc)
-  products    Product[]
-  isActive    Boolean   @default(true)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-
-  @@map("stores")
-}
-
 model Product {
   id               String    @id @default(uuid())
   mercacioId       String    @unique // Reference to Mercacio APP product ID
