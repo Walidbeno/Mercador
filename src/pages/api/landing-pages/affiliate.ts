@@ -7,24 +7,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    // Validate API key
+    // Validate API key against environment variable
     const apiKey = req.headers['x-api-key'];
-    if (!apiKey) {
-      return res.status(401).json({ error: 'API key required' });
-    }
-
-    const validApiKey = await prisma.apiKey.findFirst({
-      where: { key: apiKey as string, isActive: true }
-    });
-
-    if (!validApiKey) {
+    if (!apiKey || apiKey !== process.env.MERCACIO_API_KEY) {
       return res.status(401).json({ error: 'Invalid API key' });
     }
 
     const {
       productId,
       mercacioUserId,
-      trackingId, // This will be the affiliate tracking ID from mercacio.store
+      trackingId,
       template,
       settings,
       customData,
@@ -84,7 +76,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
     // Generate the URL using the tracking ID
-    const url = `https://mercacio.net/p/${trackingId}`;
+    const url = `${process.env.NEXT_PUBLIC_BASE_URL}/p/${trackingId}`;
 
     return res.status(200).json({
       landingPage,
