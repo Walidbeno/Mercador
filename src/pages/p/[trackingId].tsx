@@ -14,7 +14,7 @@ interface Props {
       description: string;
       shortDescription: string | null;
       basePrice: string;
-      commissionRate: string;
+      commissionRate: string; // Fixed commission amount in euros
       imageUrl: string | null;
       thumbnailUrl: string | null;
       galleryUrls: string[];
@@ -26,7 +26,7 @@ export default function LandingPage({ landingPage }: Props) {
   const templateHtml = renderTemplate(landingPage.template, {
     ...landingPage.product,
     basePrice: Number(landingPage.product.basePrice),
-    commission: Number(landingPage.product.commissionRate)
+    commissionRate: Number(landingPage.product.commissionRate)
   });
 
   return (
@@ -76,7 +76,7 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
     }
 
     // Check for custom commission if there's an affiliateId
-    let commission: Decimal;
+    let commissionRate: Decimal;
 
     if (landingPage.affiliateId) {
       const customCommission = await prisma.affiliateProductCommission.findUnique({
@@ -94,17 +94,17 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
 
       if (customCommission && customCommission.isActive) {
         // Use custom fixed commission amount
-        commission = customCommission.commission;
-        console.log(`Using custom commission for affiliate ${landingPage.affiliateId}: €${commission}`);
+        commissionRate = customCommission.commission;
+        console.log(`Using custom commission for affiliate ${landingPage.affiliateId}: €${commissionRate}`);
       } else {
         // Use commissionRate directly as the amount
-        commission = landingPage.product.commissionRate;
-        console.log(`Using default commission amount: €${commission}`);
+        commissionRate = landingPage.product.commissionRate;
+        console.log(`Using default commission amount: €${commissionRate}`);
       }
     } else {
       // Use commissionRate directly as the amount
-      commission = landingPage.product.commissionRate;
-      console.log(`No affiliate ID, using default commission amount: €${commission}`);
+      commissionRate = landingPage.product.commissionRate;
+      console.log(`No affiliate ID, using default commission amount: €${commissionRate}`);
     }
 
     // Track the visit here (only if not preview)
@@ -118,7 +118,7 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
       product: {
         ...landingPage.product,
         basePrice: landingPage.product.basePrice.toString(),
-        commissionRate: commission.toString()
+        commissionRate: commissionRate.toString()
       }
     };
 

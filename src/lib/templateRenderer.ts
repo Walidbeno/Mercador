@@ -20,4 +20,4 @@ export function renderTemplate(template: TemplateType, product: Product): string
     default:
       throw new Error(`Unknown template: ${template}`);
   }
-} 
+}
