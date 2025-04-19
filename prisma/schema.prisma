@@ -22,8 +22,7 @@ model Product {
   basePrice        Decimal   @db.Decimal(10, 2) @map("base_price")
   vatRate          Decimal?  @db.Decimal(5, 2) @map("vat_rate")
   vatIncluded      Boolean   @default(false) @map("vat_included")
-  commissionRate   Decimal   @db.Decimal(5, 2) @map("commission_rate")
-  commissionType   String    @default("percentage") @map("commission_type")
+  commission       Decimal   @db.Decimal(10, 2) @map("commission") // Fixed commission amount in euros
   stockQuantity    Int       @default(0) @map("stock_quantity")
   thumbnailUrl     String?   @map("thumbnail_url")
   imageUrl         String?   @map("image_url")

@@ -27,7 +27,7 @@ const formatPrice = (price: Decimal): string => {
 };
 
 const calculateCommission = (price: Decimal, rate: Decimal): number => {
-  return Number(price) * (Number(rate) / 100);
+  return Number(rate); // Just return the rate as the commission amount
 };
 
 const formatCommission = (commission: number | Decimal): string => {

@@ -31,7 +31,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       vat_rate,
       vat_included,
       commission_rate,
-      commission_type,
       stock_quantity,
       thumbnail_url,
       image_url,
@@ -64,7 +63,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         vatRate: vat_rate,
         vatIncluded: vat_included,
         commissionRate: commission_rate,
-        commissionType: commission_type,
+        commissionType: 'fixed', // Since we're using it as a fixed amount
         stockQuantity: stock_quantity,
         thumbnailUrl: thumbnail_url,
         imageUrl: image_url,
@@ -85,7 +84,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         vatRate: vat_rate,
         vatIncluded: vat_included,
         commissionRate: commission_rate,
-        commissionType: commission_type,
+        commissionType: 'fixed', // Since we're using it as a fixed amount
         stockQuantity: stock_quantity,
         thumbnailUrl: thumbnail_url,
         imageUrl: image_url,
