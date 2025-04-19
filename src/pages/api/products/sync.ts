@@ -30,7 +30,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       base_price,
       vat_rate,
       vat_included,
-      commission_rate,
+      commission,
       stock_quantity,
       thumbnail_url,
       image_url,
@@ -44,9 +44,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     } = req.body;
 
     // Validate required fields
-    if (!id || !title || !description || !base_price || !commission_rate) {
+    if (!id || !title || !description || !base_price || !commission) {
       return res.status(400).json({ 
-        error: 'Required fields missing: id, title, description, base_price, commission_rate' 
+        error: 'Required fields missing: id, title, description, base_price, commission' 
       });
     }
 
@@ -62,8 +62,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         basePrice: base_price,
         vatRate: vat_rate,
         vatIncluded: vat_included,
-        commissionRate: commission_rate,
-        commissionType: 'fixed', // Since we're using it as a fixed amount
+        commission: commission,
         stockQuantity: stock_quantity,
         thumbnailUrl: thumbnail_url,
         imageUrl: image_url,
@@ -83,8 +82,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         basePrice: base_price,
         vatRate: vat_rate,
         vatIncluded: vat_included,
-        commissionRate: commission_rate,
-        commissionType: 'fixed', // Since we're using it as a fixed amount
+        commission: commission,
         stockQuantity: stock_quantity,
         thumbnailUrl: thumbnail_url,
         imageUrl: image_url,
