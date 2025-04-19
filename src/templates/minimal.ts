@@ -33,10 +33,13 @@ export const minimalTemplate = (product: {
             />
             <div class="space-y-4">
                 <div class="inline-block bg-black text-white text-2xl font-bold px-6 py-3 rounded-full">
-                    €${product.basePrice.toFixed(2)}
+                    Base Price: €${product.basePrice.toFixed(2)}
                 </div>
                 <div class="block bg-blue-600 text-white text-xl font-bold px-6 py-3 rounded-full">
                     Your Commission: €${product.commissionRate.toFixed(2)}
+                </div>
+                <div class="block bg-green-600 text-white text-2xl font-bold px-6 py-3 rounded-full">
+                    Total Price: €${(product.basePrice + product.commissionRate).toFixed(2)}
                 </div>
             </div>
             <a 
@@ -68,8 +71,9 @@ export const minimalTemplate = (product: {
         <!-- CTA Section -->
         <div id="buy" class="text-center py-16 border-t border-gray-200">
             <h2 class="text-3xl font-bold mb-6">Ready to Transform Your Life?</h2>
-            <div class="text-4xl font-bold mb-4">€${product.basePrice.toFixed(2)}</div>
-            <div class="text-2xl font-bold text-blue-600 mb-8">Your Commission: €${product.commissionRate.toFixed(2)}</div>
+            <div class="text-4xl font-bold mb-4">Base Price: €${product.basePrice.toFixed(2)}</div>
+            <div class="text-2xl font-bold text-blue-600 mb-4">Your Commission: €${product.commissionRate.toFixed(2)}</div>
+            <div class="text-3xl font-bold text-green-600 mb-8">Total Price: €${(product.basePrice + product.commissionRate).toFixed(2)}</div>
             <a 
                 href="#" 
                 class="inline-block bg-black text-white px-12 py-4 rounded-full font-bold text-lg hover:bg-gray-900 transition-colors"
@@ -83,8 +87,9 @@ export const minimalTemplate = (product: {
 
     <!-- Floating Price Badge -->
     <div class="fixed bottom-4 right-4 bg-black text-white px-6 py-3 rounded-full shadow-lg">
-        <div class="font-bold">€${product.basePrice.toFixed(2)}</div>
+        <div class="font-bold">Base: €${product.basePrice.toFixed(2)}</div>
         <div class="text-sm">Commission: €${product.commissionRate.toFixed(2)}</div>
+        <div class="font-bold text-green-400">Total: €${(product.basePrice + product.commissionRate).toFixed(2)}</div>
     </div>
 </body>
 </html>

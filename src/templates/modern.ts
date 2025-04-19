@@ -29,11 +29,14 @@ export const modernTemplate = (product: {
                     <div>
                         <h1 class="text-4xl font-bold text-gray-900 mb-6">${product.title}</h1>
                         <p class="text-xl text-gray-600 mb-8">${product.shortDescription || ''}</p>
-                        <div class="bg-green-100 text-green-800 text-lg font-semibold px-4 py-2 rounded-md inline-block mb-8">
-                            Special Offer: €${product.basePrice.toFixed(2)}
+                        <div class="bg-green-100 text-green-800 text-lg font-semibold px-4 py-2 rounded-md inline-block mb-4">
+                            Base Price: €${product.basePrice.toFixed(2)}
                         </div>
-                        <div class="bg-blue-100 text-blue-800 text-lg font-semibold px-4 py-2 rounded-md inline-block mb-8">
+                        <div class="bg-blue-100 text-blue-800 text-lg font-semibold px-4 py-2 rounded-md inline-block mb-4">
                             Your Commission: €${product.commissionRate.toFixed(2)}
+                        </div>
+                        <div class="bg-purple-100 text-purple-800 text-xl font-semibold px-4 py-2 rounded-md inline-block mb-8">
+                            Total Price: €${(product.basePrice + product.commissionRate).toFixed(2)}
                         </div>
                         <a href="#buy-now" class="block w-full sm:w-auto text-center bg-indigo-600 text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-indigo-700 transition-colors">
                             Get Started Now
@@ -76,8 +79,9 @@ export const modernTemplate = (product: {
         <div id="buy-now" class="bg-indigo-700 py-16">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
                 <h2 class="text-3xl font-bold text-white mb-8">Ready to Get Started?</h2>
-                <div class="text-5xl font-bold text-white mb-8">€${product.basePrice.toFixed(2)}</div>
-                <div class="text-2xl font-bold text-white mb-8">Your Commission: €${product.commissionRate.toFixed(2)}</div>
+                <div class="text-4xl font-bold text-white mb-4">Base Price: €${product.basePrice.toFixed(2)}</div>
+                <div class="text-2xl font-bold text-white mb-4">Your Commission: €${product.commissionRate.toFixed(2)}</div>
+                <div class="text-3xl font-bold text-white mb-8">Total Price: €${(product.basePrice + product.commissionRate).toFixed(2)}</div>
                 <a 
                     href="#" 
                     class="inline-block bg-white text-indigo-700 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-colors"
