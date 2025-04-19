@@ -14,7 +14,7 @@ interface Props {
       description: string;
       shortDescription: string | null;
       basePrice: string;
-      commission: string; // Fixed commission amount in euros
+      commissionRate: string;
       imageUrl: string | null;
       thumbnailUrl: string | null;
       galleryUrls: string[];
@@ -26,7 +26,7 @@ export default function LandingPage({ landingPage }: Props) {
   const templateHtml = renderTemplate(landingPage.template, {
     ...landingPage.product,
     basePrice: Number(landingPage.product.basePrice),
-    commission: Number(landingPage.product.commission)
+    commission: Number(landingPage.product.commissionRate)
   });
 
   return (
@@ -118,7 +118,7 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
       product: {
         ...landingPage.product,
         basePrice: landingPage.product.basePrice.toString(),
-        commission: commission.toString()
+        commissionRate: commission.toString()
       }
     };
 

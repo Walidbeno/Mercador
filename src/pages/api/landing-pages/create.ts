@@ -77,7 +77,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             title: true,
             description: true,
             basePrice: true,
-            commission: true,
+            commissionRate: true,
             imageUrl: true,
             thumbnailUrl: true,
             galleryUrls: true
