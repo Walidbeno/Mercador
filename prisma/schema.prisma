@@ -35,6 +35,7 @@ model Product {
   visibility       String    @default("public")
   categoryId       String?   @map("category_id")
   landingPages     LandingPage[]
+  affiliateCommissions AffiliateProductCommission[]
   createdAt        DateTime  @default(now()) @map("created_at")
   updatedAt        DateTime  @updatedAt @map("updated_at")
 
@@ -73,4 +74,21 @@ model ApiKey {
 
   @@index([key])
   @@map("api_keys")
+}
+
+// Custom commission rates for specific affiliate-product combinations
+model AffiliateProductCommission {
+  id            String   @id @default(uuid())
+  productId     String   // Original product ID from main app
+  affiliateId   String   // Affiliate ID from main app
+  commission    Decimal  @db.Decimal(10, 2) // Fixed commission amount in euros
+  isActive      Boolean  @default(true)
+  externalSync  Boolean  @default(false) @map("external_sync") // Track if synced with external API
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+  product       Product  @relation(fields: [productId], references: [id])
+
+  @@unique([productId, affiliateId])
+  @@index([affiliateId])
+  @@map("affiliate_product_commissions")
 }

@@ -4,7 +4,7 @@ export const modernTemplate = (product: {
   shortDescription?: string | null;
   imageUrl?: string | null;
   basePrice: number;
-  commissionRate: number;
+  commission: number;
   thumbnailUrl?: string | null;
   galleryUrls?: string[];
 }) => `
@@ -31,6 +31,9 @@ export const modernTemplate = (product: {
                         <p class="text-xl text-gray-600 mb-8">${product.shortDescription || ''}</p>
                         <div class="bg-green-100 text-green-800 text-lg font-semibold px-4 py-2 rounded-md inline-block mb-8">
                             Special Offer: €${product.basePrice.toFixed(2)}
+                        </div>
+                        <div class="bg-blue-100 text-blue-800 text-lg font-semibold px-4 py-2 rounded-md inline-block mb-8">
+                            Your Commission: €${product.commission.toFixed(2)}
                         </div>
                         <a href="#buy-now" class="block w-full sm:w-auto text-center bg-indigo-600 text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-indigo-700 transition-colors">
                             Get Started Now
@@ -74,6 +77,7 @@ export const modernTemplate = (product: {
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
                 <h2 class="text-3xl font-bold text-white mb-8">Ready to Get Started?</h2>
                 <div class="text-5xl font-bold text-white mb-8">€${product.basePrice.toFixed(2)}</div>
+                <div class="text-2xl font-bold text-white mb-8">Your Commission: €${product.commission.toFixed(2)}</div>
                 <a 
                     href="#" 
                     class="inline-block bg-white text-indigo-700 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-colors"

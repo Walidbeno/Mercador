@@ -14,8 +14,7 @@ interface Props {
       description: string;
       shortDescription: string | null;
       basePrice: string;
-      commissionRate: string;
-      commissionType: string;
+      commission: string; // Fixed commission amount in euros
       imageUrl: string | null;
       thumbnailUrl: string | null;
       galleryUrls: string[];
@@ -27,7 +26,7 @@ export default function LandingPage({ landingPage }: Props) {
   const templateHtml = renderTemplate(landingPage.template, {
     ...landingPage.product,
     basePrice: Number(landingPage.product.basePrice),
-    commissionRate: Number(landingPage.product.commissionRate)
+    commission: Number(landingPage.product.commission)
   });
 
   return (
@@ -53,6 +52,8 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
         template: true,
         settings: true,
         customData: true,
+        affiliateId: true,
+        productId: true,
         product: {
           select: {
             title: true,
@@ -75,6 +76,31 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
       };
     }
 
+    // Check for custom commission if there's an affiliateId
+    let commission: Decimal;
+
+    if (landingPage.affiliateId) {
+      const customCommission = await prisma.affiliateProductCommission.findUnique({
+        where: {
+          productId_affiliateId: {
+            productId: landingPage.productId,
+            affiliateId: landingPage.affiliateId
+          }
+        }
+      });
+
+      if (customCommission) {
+        // Use custom fixed commission amount
+        commission = customCommission.commission;
+      } else {
+        // Calculate default commission from rate
+        commission = landingPage.product.commissionRate.mul(landingPage.product.basePrice).div(100);
+      }
+    } else {
+      // Calculate default commission from rate
+      commission = landingPage.product.commissionRate.mul(landingPage.product.basePrice).div(100);
+    }
+
     // Track the visit here (only if not preview)
     if (!preview) {
       // TODO: Implement visit tracking
@@ -86,7 +112,7 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
       product: {
         ...landingPage.product,
         basePrice: landingPage.product.basePrice.toString(),
-        commissionRate: landingPage.product.commissionRate.toString()
+        commission: commission.toString()
       }
     };
 
