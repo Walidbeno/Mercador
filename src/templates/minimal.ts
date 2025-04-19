@@ -4,7 +4,7 @@ export const minimalTemplate = (product: {
   shortDescription?: string | null;
   imageUrl?: string | null;
   basePrice: number;
-  commission: number;
+  commissionRate: number;
   thumbnailUrl?: string | null;
   galleryUrls?: string[];
 }) => `
@@ -36,7 +36,7 @@ export const minimalTemplate = (product: {
                     €${product.basePrice.toFixed(2)}
                 </div>
                 <div class="block bg-blue-600 text-white text-xl font-bold px-6 py-3 rounded-full">
-                    Your Commission: €${product.commission.toFixed(2)}
+                    Your Commission: €${product.commissionRate.toFixed(2)}
                 </div>
             </div>
             <a 
@@ -69,7 +69,7 @@ export const minimalTemplate = (product: {
         <div id="buy" class="text-center py-16 border-t border-gray-200">
             <h2 class="text-3xl font-bold mb-6">Ready to Transform Your Life?</h2>
             <div class="text-4xl font-bold mb-4">€${product.basePrice.toFixed(2)}</div>
-            <div class="text-2xl font-bold text-blue-600 mb-8">Your Commission: €${product.commission.toFixed(2)}</div>
+            <div class="text-2xl font-bold text-blue-600 mb-8">Your Commission: €${product.commissionRate.toFixed(2)}</div>
             <a 
                 href="#" 
                 class="inline-block bg-black text-white px-12 py-4 rounded-full font-bold text-lg hover:bg-gray-900 transition-colors"
@@ -84,7 +84,7 @@ export const minimalTemplate = (product: {
     <!-- Floating Price Badge -->
     <div class="fixed bottom-4 right-4 bg-black text-white px-6 py-3 rounded-full shadow-lg">
         <div class="font-bold">€${product.basePrice.toFixed(2)}</div>
-        <div class="text-sm">Commission: €${product.commission.toFixed(2)}</div>
+        <div class="text-sm">Commission: €${product.commissionRate.toFixed(2)}</div>
     </div>
 </body>
 </html>

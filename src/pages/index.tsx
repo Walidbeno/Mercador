@@ -99,7 +99,7 @@ const Home: NextPage<Props> = ({ products }) => {
                     {formatPrice(product.basePrice)}
                   </div>
                   <div className="text-sm text-gray-500">
-                    Commission: {formatPrice(product.commission)}
+                    Commission: {formatPrice(product.commissionRate)}
                   </div>
                 </div>
 

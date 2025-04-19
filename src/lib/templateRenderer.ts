@@ -7,7 +7,7 @@ type Product = {
   imageUrl?: string | null;
   thumbnailUrl?: string | null;
   basePrice: number;
-  commission: number; // Fixed commission amount in euros
+  commissionRate: number; // Fixed commission amount in euros
   galleryUrls?: string[];
 };
 
