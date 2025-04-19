@@ -57,6 +57,7 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
         settings: true,
         customData: true,
         affiliateId: true,
+        mercacioUserId: true, // Also get the mercacioUserId as it might be used as affiliateId
         productId: true,
         product: {
           select: {
@@ -77,17 +78,21 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
       return { notFound: true };
     }
 
+    // Use either affiliateId or mercacioUserId for checking custom commissions
+    const effectiveAffiliateId = landingPage.affiliateId || landingPage.mercacioUserId;
+    console.log('Effective Affiliate ID:', effectiveAffiliateId);
+
     // Check for custom commission if there's an affiliateId
     let finalCommissionRate: Decimal = landingPage.product.commissionRate; // Default to product's commission rate
 
-    if (landingPage.affiliateId) {
-      console.log(`Checking custom commission for affiliate ${landingPage.affiliateId} and product ${landingPage.productId}`);
+    if (effectiveAffiliateId) {
+      console.log(`Checking custom commission for affiliate ${effectiveAffiliateId} and product ${landingPage.productId}`);
       
       const customCommission = await prisma.affiliateProductCommission.findUnique({
         where: {
           productId_affiliateId: {
             productId: landingPage.productId,
-            affiliateId: landingPage.affiliateId
+            affiliateId: effectiveAffiliateId
           }
         },
         select: {
@@ -95,6 +100,8 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
           isActive: true
         }
       });
+
+      console.log('Found custom commission:', customCommission);
 
       if (customCommission && customCommission.isActive) {
         finalCommissionRate = customCommission.commission;
@@ -120,6 +127,8 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
         commissionRate: finalCommissionRate.toString() // Use the final commission rate
       }
     };
+
+    console.log('Final commission rate being used:', finalCommissionRate.toString());
 
     return {
       props: {
