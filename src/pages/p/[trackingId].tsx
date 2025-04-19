@@ -86,19 +86,26 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
             productId: landingPage.productId,
             affiliateId: landingPage.affiliateId
           }
+        },
+        select: {
+          commission: true,
+          isActive: true
         }
       });
 
-      if (customCommission) {
+      if (customCommission && customCommission.isActive) {
         // Use custom fixed commission amount
         commission = customCommission.commission;
+        console.log(`Using custom commission for affiliate ${landingPage.affiliateId}: €${commission}`);
       } else {
         // Calculate default commission from rate
         commission = landingPage.product.commissionRate.mul(landingPage.product.basePrice).div(100);
+        console.log(`Using default commission rate ${landingPage.product.commissionRate}%: €${commission}`);
       }
     } else {
       // Calculate default commission from rate
       commission = landingPage.product.commissionRate.mul(landingPage.product.basePrice).div(100);
+      console.log(`No affiliate ID, using default commission rate ${landingPage.product.commissionRate}%: €${commission}`);
     }
 
     // Track the visit here (only if not preview)
