@@ -28,6 +28,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(404).json({ error: 'Product not found' });
     }
 
+    // Check for custom commission
+    let commission = Number(product.basePrice) * (Number(product.commissionRate) / 100);
+    
+    if (req.query.affiliateId) {
+      const customCommission = await prisma.affiliateProductCommission.findUnique({
+        where: {
+          productId_affiliateId: {
+            productId: product.id,
+            affiliateId: req.query.affiliateId as string
+          }
+        }
+      });
+
+      if (customCommission) {
+        commission = Number(customCommission.commission);
+      }
+    }
+
     // Map product data to template format
     const templateData = {
       title: product.title,
@@ -36,7 +54,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       imageUrl: product.imageUrl || '',
       thumbnailUrl: product.thumbnailUrl || '',
       basePrice: Number(product.basePrice),
-      commissionRate: Number(product.commissionRate),
+      commission: commission,
       galleryUrls: product.galleryUrls
     };
 
