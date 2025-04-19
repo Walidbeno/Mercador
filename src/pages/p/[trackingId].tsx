@@ -23,11 +23,14 @@ interface Props {
 }
 
 export default function LandingPage({ landingPage }: Props) {
-  const templateHtml = renderTemplate(landingPage.template, {
+  // Ensure we're using the correct commission rate
+  const templateData = {
     ...landingPage.product,
     basePrice: Number(landingPage.product.basePrice),
     commissionRate: Number(landingPage.product.commissionRate)
-  });
+  };
+
+  const templateHtml = renderTemplate(landingPage.template, templateData);
 
   return (
     <div 
@@ -43,6 +46,7 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
     const trackingId = params?.trackingId as string;
     const preview = query.preview === 'true';
 
+    // First, get the landing page with all necessary data
     const landingPage = await prisma.landingPage.findUnique({
       where: { 
         trackingId,
@@ -70,15 +74,15 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
     });
 
     if (!landingPage) {
-      return {
-        notFound: true
-      };
+      return { notFound: true };
     }
 
     // Check for custom commission if there's an affiliateId
-    let commissionRate: Decimal;
+    let finalCommissionRate: Decimal = landingPage.product.commissionRate; // Default to product's commission rate
 
     if (landingPage.affiliateId) {
+      console.log(`Checking custom commission for affiliate ${landingPage.affiliateId} and product ${landingPage.productId}`);
+      
       const customCommission = await prisma.affiliateProductCommission.findUnique({
         where: {
           productId_affiliateId: {
@@ -93,18 +97,13 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
       });
 
       if (customCommission && customCommission.isActive) {
-        // Use custom fixed commission amount
-        commissionRate = customCommission.commission;
-        console.log(`Using custom commission for affiliate ${landingPage.affiliateId}: €${commissionRate}`);
+        finalCommissionRate = customCommission.commission;
+        console.log(`Found active custom commission: €${finalCommissionRate}`);
       } else {
-        // Use commissionRate directly as the amount
-        commissionRate = landingPage.product.commissionRate;
-        console.log(`Using default commission amount: €${commissionRate}`);
+        console.log(`No custom commission found, using default rate: €${finalCommissionRate}`);
       }
     } else {
-      // Use commissionRate directly as the amount
-      commissionRate = landingPage.product.commissionRate;
-      console.log(`No affiliate ID, using default commission amount: €${commissionRate}`);
+      console.log(`No affiliate ID provided, using default commission rate: €${finalCommissionRate}`);
     }
 
     // Track the visit here (only if not preview)
@@ -118,7 +117,7 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
       product: {
         ...landingPage.product,
         basePrice: landingPage.product.basePrice.toString(),
-        commissionRate: commissionRate.toString()
+        commissionRate: finalCommissionRate.toString() // Use the final commission rate
       }
     };
 
@@ -129,8 +128,6 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
     };
   } catch (error) {
     console.error('Error fetching landing page:', error);
-    return {
-      notFound: true
-    };
+    return { notFound: true };
   }
 }; 
