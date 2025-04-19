@@ -54,7 +54,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       imageUrl: product.imageUrl || '',
       thumbnailUrl: product.thumbnailUrl || '',
       basePrice: Number(product.basePrice),
-      commission: commission,
+      commission: Number(product.commission),
       galleryUrls: product.galleryUrls
     };
 

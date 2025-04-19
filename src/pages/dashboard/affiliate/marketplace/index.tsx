@@ -8,7 +8,7 @@ interface Product {
   title: string;
   thumbnailUrl: string | null;
   basePrice: Decimal;
-  commissionRate: Decimal;
+  commission: Decimal;
   customCommission?: Decimal;
   status: string;
   visibility: string;
@@ -26,10 +26,6 @@ const formatPrice = (price: Decimal): string => {
   }).format(Number(price));
 };
 
-const calculateCommission = (price: Decimal, rate: Decimal): number => {
-  return Number(rate); // Just return the rate as the commission amount
-};
-
 const formatCommission = (commission: number | Decimal): string => {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -43,8 +39,7 @@ const MarketplacePage: NextPage<Props> = ({ products, affiliateId }) => {
       {products.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {products.map((product) => {
-            const commission = product.customCommission || 
-              calculateCommission(product.basePrice, product.commissionRate);
+            const commission = product.customCommission || product.commission;
             
             return (
               <div key={product.id} className="bg-gray-50 rounded-lg hover:shadow-lg hover:shadow-gray-300 hover:bg-white transition-all duration-300 overflow-hidden">
@@ -106,7 +101,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async (context) => 
         title: true,
         thumbnailUrl: true,
         basePrice: true,
-        commissionRate: true,
+        commission: true,
         status: true,
         visibility: true
       },

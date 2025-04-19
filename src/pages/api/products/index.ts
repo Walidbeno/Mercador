@@ -20,8 +20,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       description,
       shortDescription,
       basePrice,
-      commissionRate,
-      commissionType = 'percentage',
+      commission,
       stockQuantity = 0,
       imageUrl,
       galleryUrls = [],
@@ -37,9 +36,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     } = req.body;
 
     // Validate required fields
-    if (!id || !title || !description || !basePrice || !commissionRate) {
+    if (!id || !title || !description || !basePrice || !commission) {
       return res.status(400).json({ 
-        error: 'Required fields missing: id, title, description, basePrice, commissionRate' 
+        error: 'Required fields missing: id, title, description, basePrice, commission' 
       });
     }
 
@@ -63,8 +62,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         description,
         shortDescription,
         basePrice: parseFloat(basePrice),
-        commissionRate: parseFloat(commissionRate),
-        commissionType,
+        commission: parseFloat(commission),
         stockQuantity,
         imageUrl,
         galleryUrls,
@@ -83,8 +81,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         description,
         shortDescription,
         basePrice: parseFloat(basePrice),
-        commissionRate: parseFloat(commissionRate),
-        commissionType,
+        commission: parseFloat(commission),
         stockQuantity,
         imageUrl,
         galleryUrls,
