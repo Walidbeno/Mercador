@@ -36,10 +36,20 @@ export default function LandingPage({ landingPage }: Props) {
   return (
     <>
       <Head>
+        {/* Configuration script must come before the tracking script */}
+        <script dangerouslySetInnerHTML={{
+          __html: `
+            window.batchTrackingConfig = {
+                debug: true, // So you can see what's happening in console
+                apiUrl: 'https://www.mercacio.store/api/events', // Your tracking API endpoint
+                cookieName: 'mercacio_attribution',
+                cookieExpiry: 30 // days
+            };
+          `
+        }} />
         <script 
           src="https://www.mercacio.store/batch-tracking.js" 
           data-auto-init="true"
-          data-debug="false"
           async
         />
       </Head>
