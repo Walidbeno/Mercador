@@ -1,4 +1,5 @@
 import { GetServerSideProps } from 'next';
+import Head from 'next/head';
 import prisma from '@/lib/prisma';
 import { Decimal } from '@prisma/client/runtime/library';
 import { renderTemplate } from '@/lib/templateRenderer';
@@ -33,11 +34,21 @@ export default function LandingPage({ landingPage }: Props) {
   const templateHtml = renderTemplate(landingPage.template, templateData);
 
   return (
-    <div 
-      dangerouslySetInnerHTML={{ __html: templateHtml }}
-      data-settings={JSON.stringify(landingPage.settings)}
-      data-custom-data={JSON.stringify(landingPage.customData)}
-    />
+    <>
+      <Head>
+        <script 
+          src="https://www.mercacio.store/batch-tracking.js" 
+          data-auto-init="true"
+          data-debug="false"
+          async
+        />
+      </Head>
+      <div 
+        dangerouslySetInnerHTML={{ __html: templateHtml }}
+        data-settings={JSON.stringify(landingPage.settings)}
+        data-custom-data={JSON.stringify(landingPage.customData)}
+      />
+    </>
   );
 }
 
