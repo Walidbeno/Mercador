@@ -43,7 +43,10 @@ export default function LandingPage({ landingPage }: Props) {
                 apiUrl: 'https://www.mercacio.store/api/events',
                 cookieName: 'mercacio_attribution',
                 cookieExpiry: 30,
-                credentials: 'include'
+                fetchOptions: {
+                    credentials: 'include',
+                    mode: 'cors'
+                }
             };
           `
         }} />
