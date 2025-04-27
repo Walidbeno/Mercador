@@ -42,7 +42,8 @@ export default function LandingPage({ landingPage }: Props) {
                 debug: true,
                 apiUrl: 'https://www.mercacio.store/api/events',
                 cookieName: 'mercacio_attribution',
-                cookieExpiry: 30
+                cookieExpiry: 30,
+                credentials: 'include'
             };
           `
         }} />
