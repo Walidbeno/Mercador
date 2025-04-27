@@ -17,6 +17,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       productId,
       mercacioUserId,
       mercacioProductId,
+      trackingId,
       template,
       settings,
       customData,
@@ -25,14 +26,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     } = req.body;
 
     // Validate required fields
-    if (!productId || !mercacioUserId || !mercacioProductId || !template) {
+    if (!productId || !mercacioUserId || !mercacioProductId || !template || !trackingId) {
       return res.status(400).json({ 
-        error: 'ProductId, mercacioUserId, mercacioProductId, and template are required' 
+        error: 'ProductId, mercacioUserId, mercacioProductId, trackingId, and template are required' 
       });
     }
 
-    // Generate tracking ID
-    const trackingId = `${mercacioUserId}-${mercacioProductId}`;
+    // Check if trackingId already exists
+    const existingTrackingPage = await prisma.landingPage.findUnique({
+      where: { trackingId }
+    });
+
+    if (existingTrackingPage) {
+      return res.status(409).json({ 
+        error: 'Landing page with this tracking ID already exists' 
+      });
+    }
 
     // Check if product exists
     const product = await prisma.product.findUnique({
@@ -44,7 +53,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // Check if this user already has a landing page for this product and locale
-    const existingPage = await prisma.landingPage.findFirst({
+    const existingUserPage = await prisma.landingPage.findFirst({
       where: {
         productId,
         mercacioUserId,
@@ -52,7 +61,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
     });
 
-    if (existingPage) {
+    if (existingUserPage) {
       return res.status(409).json({ 
         error: 'Landing page already exists for this user, product, and locale combination' 
       });
@@ -86,15 +95,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
     });
 
-    // Generate the URL using the tracking ID
-    const url = `${process.env.NEXT_PUBLIC_BASE_URL}/p/${trackingId}`;
+    // Generate URLs for both formats
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+    const legacyUrl = `${baseUrl}/p/${trackingId}`;
+    const refUrl = `${baseUrl}/ref/${trackingId}`;
     
-    // If there's an affiliate, add their ID to the URL
-    const finalUrl = affiliateId ? `${url}?aff=${affiliateId}` : url;
+    // If there's an affiliate, add their ID to the URLs
+    const finalLegacyUrl = affiliateId ? `${legacyUrl}?aff=${affiliateId}` : legacyUrl;
+    const finalRefUrl = affiliateId ? `${refUrl}?aff=${affiliateId}` : refUrl;
 
     return res.status(201).json({
       landingPage,
-      url: finalUrl,
+      urls: {
+        legacy: finalLegacyUrl,
+        reference: finalRefUrl
+      },
       trackingId
     });
 
