@@ -4,6 +4,7 @@ import prisma from '@/lib/prisma';
 interface StoreProduct {
   id: string;
   product: {
+    id: string;
     title: string;
     description: string;
     shortDescription: string | null;
