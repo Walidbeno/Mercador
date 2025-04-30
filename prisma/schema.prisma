@@ -38,6 +38,7 @@ model Product {
   affiliateCommissions AffiliateProductCommission[]
   createdAt        DateTime  @default(now()) @map("created_at")
   updatedAt        DateTime  @updatedAt @map("updated_at")
+  storeProducts    StoreProduct[]
 
   @@map("products")
 }
@@ -91,4 +92,73 @@ model AffiliateProductCommission {
   @@unique([productId, affiliateId])
   @@index([affiliateId])
   @@map("affiliate_product_commissions")
+}
+
+model Store {
+  id          String    @id @default(uuid())
+  name        String
+  slug        String    @unique
+  description String?   @db.Text
+  logo        String?
+  banner      String?
+  theme       Json?     // Store theme settings
+  settings    Json?     // Store settings (currency, language, etc)
+  ownerId     String    // User ID from Mercacio APP
+  isActive    Boolean   @default(true)
+  products    StoreProduct[]
+  carts       Cart[]
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@index([ownerId])
+  @@map("stores")
+}
+
+model StoreProduct {
+  id          String    @id @default(uuid())
+  storeId     String
+  store       Store     @relation(fields: [storeId], references: [id])
+  productId   String
+  product     Product   @relation(fields: [productId], references: [id])
+  isActive    Boolean   @default(true)
+  featured    Boolean   @default(false)
+  sortOrder   Int       @default(0)
+  cartItems   CartItem[]
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@unique([storeId, productId])
+  @@index([productId])
+  @@map("store_products")
+}
+
+model Cart {
+  id          String    @id @default(uuid())
+  storeId     String
+  store       Store     @relation(fields: [storeId], references: [id])
+  sessionId   String    @unique // Browser session ID
+  items       CartItem[]
+  status      String    @default("active") // active, abandoned, completed
+  metadata    Json?     // Additional cart data
+  expiresAt   DateTime?
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@index([storeId])
+  @@index([sessionId])
+  @@map("carts")
+}
+
+model CartItem {
+  id              String    @id @default(uuid())
+  cartId          String
+  cart            Cart      @relation(fields: [cartId], references: [id])
+  storeProductId  String
+  storeProduct    StoreProduct @relation(fields: [storeProductId], references: [id])
+  quantity        Int
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  @@unique([cartId, storeProductId])
+  @@map("cart_items")
 }
