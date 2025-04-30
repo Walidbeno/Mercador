@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '@/lib/prisma';
+import { randomUUID } from 'crypto';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   switch (req.method) {
@@ -37,27 +38,15 @@ async function handleCreateStore(req: NextApiRequest, res: NextApiResponse) {
       });
     }
 
-    // Generate slug from name
-    const slug = name.toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '');
+    // Generate a UUID for both id and slug
+    const storeId = randomUUID();
 
-    // Check if slug exists
-    const existingStore = await prisma.store.findUnique({
-      where: { slug }
-    });
-
-    if (existingStore) {
-      return res.status(409).json({ 
-        error: 'A store with this name already exists' 
-      });
-    }
-
-    // Create store
+    // Create store with the generated UUID
     const store = await prisma.store.create({
       data: {
+        id: storeId,
         name,
-        slug,
+        slug: storeId,
         description,
         logo,
         banner,
