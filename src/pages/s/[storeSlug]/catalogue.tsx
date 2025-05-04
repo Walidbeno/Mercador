@@ -227,7 +227,7 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
       
       const affiliateCommissions = await prisma.affiliateProductCommission.findMany({
         where: {
-          affiliateId,
+          affiliateId: affiliateId,
           productId: { in: productIds },
           isActive: true
         },
@@ -244,6 +244,13 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
       }, {});
       
       console.log(`Found ${affiliateCommissions.length} custom commissions for affiliate ${affiliateId}`);
+      if (affiliateCommissions.length > 0) {
+        affiliateCommissions.forEach(comm => {
+          console.log(`Custom commission for product ${comm.productId}: ${comm.commission}`);
+        });
+      } else {
+        console.log('No custom commissions found for this affiliate');
+      }
     }
 
     // Convert Decimal values to numbers for JSON serialization and apply custom commissions

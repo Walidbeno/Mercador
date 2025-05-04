@@ -262,21 +262,19 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
       console.log(`Looking for custom commission for product ${storeProduct.product.id} and affiliate ${affiliateId}`);
       
       // Try to find a custom commission for this affiliate and product
-      const customCommission = await prisma.affiliateProductCommission.findUnique({
+      const customCommission = await prisma.affiliateProductCommission.findFirst({
         where: {
-          productId_affiliateId: {
-            productId: storeProduct.product.id,
-            affiliateId: affiliateId
-          }
+          productId: storeProduct.product.id,
+          affiliateId: affiliateId,
+          isActive: true
         },
         select: {
-          commission: true,
-          isActive: true
+          commission: true
         }
       });
 
-      // If there's a custom commission and it's active, use it
-      if (customCommission && customCommission.isActive) {
+      // If there's a custom commission, use it
+      if (customCommission) {
         commissionRate = customCommission.commission;
         hasCustomCommission = true;
         console.log(`Found custom commission: ${commissionRate} (default was: ${defaultCommissionRate})`);
