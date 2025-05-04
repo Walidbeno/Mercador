@@ -79,6 +79,12 @@ const ContactPage: NextPage<Props> = ({ store }) => {
                   {getTranslation(storeLanguage, 'catalogue')}
                 </a>
                 <a 
+                  href={`/s/${store.slug}/about`} 
+                  className="text-gray-600 font-medium hover:text-indigo-600 transition-colors"
+                >
+                  {getTranslation(storeLanguage, 'about')}
+                </a>
+                <a 
                   href={`/s/${store.slug}/policy`} 
                   className="text-gray-600 font-medium hover:text-indigo-600 transition-colors"
                 >

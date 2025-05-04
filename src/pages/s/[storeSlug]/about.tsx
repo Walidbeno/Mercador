@@ -19,12 +19,12 @@ interface Props {
   store: Store;
 }
 
-const PolicyPage: NextPage<Props> = ({ store }) => {
+const AboutPage: NextPage<Props> = ({ store }) => {
   // Get store language from settings or default to English
   const storeLanguage = store.settings?.language || 'en';
 
   return (
-    <Layout title={`${getTranslation(storeLanguage, 'policyPageTitle')} | ${store.name}`}>
+    <Layout title={`${getTranslation(storeLanguage, 'aboutPageTitle')} | ${store.name}`}>
       <div className="min-h-screen bg-gray-50">
         {/* Store Header */}
         <div className="bg-white shadow">
@@ -60,13 +60,13 @@ const PolicyPage: NextPage<Props> = ({ store }) => {
                 </a>
                 <a 
                   href={`/s/${store.slug}/about`} 
-                  className="text-gray-600 font-medium hover:text-indigo-600 transition-colors"
+                  className="text-indigo-600 font-medium hover:text-indigo-800 transition-colors"
                 >
                   {getTranslation(storeLanguage, 'about')}
                 </a>
                 <a 
                   href={`/s/${store.slug}/policy`} 
-                  className="text-indigo-600 font-medium hover:text-indigo-800 transition-colors"
+                  className="text-gray-600 font-medium hover:text-indigo-600 transition-colors"
                 >
                   {getTranslation(storeLanguage, 'policy')}
                 </a>
@@ -90,26 +90,62 @@ const PolicyPage: NextPage<Props> = ({ store }) => {
         {/* Content */}
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="bg-white shadow rounded-lg p-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-6">{getTranslation(storeLanguage, 'policyPageTitle')}</h1>
+            <h1 className="text-3xl font-bold text-gray-900 mb-6">{getTranslation(storeLanguage, 'aboutPageTitle')}</h1>
             
             <div className="prose prose-lg max-w-none">
-              <h2>{getTranslation(storeLanguage, 'termsTitle')}</h2>
-              <p>Bienvenido a nuestra tienda. A continuación, se detallan los términos y condiciones que rigen la compra de productos en nuestra plataforma.</p>
+              <h2>Our Story</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                <div>
+                  <p>
+                    Welcome to {store.name}, where quality meets customer satisfaction. We started our journey in 2020 
+                    with a simple mission: to provide exceptional products that enhance our customers' lives.
+                  </p>
+                  <p>
+                    What began as a small online store has now grown into a trusted brand with customers 
+                    from around the world. We take pride in curating only the best products and delivering 
+                    an exceptional shopping experience.
+                  </p>
+                </div>
+                <div className="rounded-lg overflow-hidden shadow-lg">
+                  <img 
+                    src={store.logo || "https://via.placeholder.com/600x400?text=Our+Team"} 
+                    alt="Our Team" 
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              </div>
               
-              <h3>1. Proceso de Compra</h3>
-              <p>Al realizar una compra en nuestra tienda, usted acepta todos los términos y condiciones establecidos en esta política. El proceso de compra es simple y seguro, utilizando métodos de pago confiables.</p>
+              <h2>Our Values</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div className="bg-gray-50 p-6 rounded-lg">
+                  <h3 className="text-xl font-semibold mb-2">Quality</h3>
+                  <p>We are committed to offering only the highest quality products that meet our strict standards.</p>
+                </div>
+                <div className="bg-gray-50 p-6 rounded-lg">
+                  <h3 className="text-xl font-semibold mb-2">Customer Service</h3>
+                  <p>Our customers are at the heart of everything we do. We strive to provide exceptional service and support.</p>
+                </div>
+                <div className="bg-gray-50 p-6 rounded-lg">
+                  <h3 className="text-xl font-semibold mb-2">Innovation</h3>
+                  <p>We continuously search for innovative products and solutions to better serve our customers' needs.</p>
+                </div>
+              </div>
               
-              <h3>2. Precios y Pagos</h3>
-              <p>Todos los precios mostrados en nuestra tienda incluyen los impuestos aplicables. Aceptamos varios métodos de pago que se muestran durante el proceso de checkout.</p>
+              <h2>Our Team</h2>
+              <p>
+                Behind {store.name} is a dedicated team of professionals passionate about bringing the best 
+                products to our customers. From product selection to customer support, our team works 
+                tirelessly to ensure your satisfaction.
+              </p>
               
-              <h3>3. Envío y Entrega</h3>
-              <p>Para productos digitales, la entrega se realiza inmediatamente después de la confirmación del pago. Para productos físicos, los tiempos de entrega pueden variar según su ubicación.</p>
-              
-              <h3>4. Política de Devoluciones</h3>
-              <p>Si no está satisfecho con su compra, puede solicitar un reembolso dentro de los 30 días posteriores a la compra. Para productos digitales, evaluaremos cada caso individualmente.</p>
-              
-              <h3>5. Privacidad</h3>
-              <p>Protegemos su información personal y nunca la compartiremos con terceros sin su consentimiento explícito. Para más información, consulte nuestra Política de Privacidad.</p>
+              <div className="mt-8">
+                <h2>Connect With Us</h2>
+                <p>
+                  We love hearing from our customers! Feel free to reach out to us with any questions, 
+                  feedback, or suggestions. Visit our <a href={`/s/${store.slug}/contact`} className="text-indigo-600 hover:text-indigo-800">Contact page</a> to 
+                  get in touch with our team.
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -160,4 +196,4 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
   }
 };
 
-export default PolicyPage; 
+export default AboutPage; 
