@@ -20,6 +20,7 @@ interface StoreProduct {
 interface Store {
   id: string;
   name: string;
+  slug: string;
   description: string | null;
   logo: string | null;
   banner: string | null;
@@ -80,6 +81,30 @@ const StorePage: NextPage<Props> = ({ store, affiliateId }) => {
                 )}
               </div>
             )}
+            
+            {/* Navigation Menu */}
+            <div className="mt-8 border-t border-b border-gray-200 py-4">
+              <nav className="flex justify-center space-x-12">
+                <a 
+                  href={`/s/${store.slug}`} 
+                  className="text-indigo-600 font-medium hover:text-indigo-800 transition-colors"
+                >
+                  Home
+                </a>
+                <a 
+                  href={`/s/${store.slug}/policy`} 
+                  className="text-gray-600 font-medium hover:text-indigo-600 transition-colors"
+                >
+                  Política de venta
+                </a>
+                <a 
+                  href={`/s/${store.slug}/contact`} 
+                  className="text-gray-600 font-medium hover:text-indigo-600 transition-colors"
+                >
+                  Contact us
+                </a>
+              </nav>
+            </div>
           </div>
         </div>
 

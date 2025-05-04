@@ -66,6 +66,30 @@ const ProductPage: NextPage<Props> = ({ store, product, affiliateId }) => {
               <span className="text-gray-400">/</span>
               <span className="text-gray-900">{product.title}</span>
             </nav>
+            
+            {/* Navigation Menu */}
+            <div className="mt-4 border-t border-b border-gray-200 py-3">
+              <nav className="flex justify-center space-x-12">
+                <a 
+                  href={`/s/${store.slug}`} 
+                  className="text-gray-600 font-medium hover:text-indigo-600 transition-colors"
+                >
+                  Home
+                </a>
+                <a 
+                  href={`/s/${store.slug}/policy`} 
+                  className="text-gray-600 font-medium hover:text-indigo-600 transition-colors"
+                >
+                  Política de venta
+                </a>
+                <a 
+                  href={`/s/${store.slug}/contact`} 
+                  className="text-gray-600 font-medium hover:text-indigo-600 transition-colors"
+                >
+                  Contact us
+                </a>
+              </nav>
+            </div>
           </div>
         </div>
 
