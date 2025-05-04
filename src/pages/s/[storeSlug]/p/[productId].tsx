@@ -38,6 +38,12 @@ const ProductPage: NextPage<Props> = ({ store, product }) => {
     }).format(price);
   };
 
+  const calculateTotalPrice = (basePrice: number, commissionRate: number) => {
+    return basePrice + commissionRate;
+  };
+
+  const totalPrice = calculateTotalPrice(product.basePrice, product.commissionRate);
+
   return (
     <Layout title={`${product.title} | ${store.name}`}>
       <div className="min-h-screen bg-gray-50">
@@ -98,8 +104,23 @@ const ProductPage: NextPage<Props> = ({ store, product }) => {
               )}
 
               <div className="bg-white rounded-lg shadow p-6 mb-8">
-                <div className="text-3xl font-bold text-gray-900 mb-2">
-                  {formatPrice(product.basePrice)}
+                <div className="flex flex-col mb-4">
+                  <div className="text-gray-600 text-sm">Base Price:</div>
+                  <div className="text-2xl font-bold text-gray-700">
+                    {formatPrice(product.basePrice)}
+                  </div>
+                </div>
+                <div className="flex flex-col mb-4">
+                  <div className="text-gray-600 text-sm">Commission:</div>
+                  <div className="text-xl font-semibold text-indigo-600">
+                    + {formatPrice(product.commissionRate)}
+                  </div>
+                </div>
+                <div className="flex flex-col mb-4 pt-2 border-t border-gray-200">
+                  <div className="text-gray-700 text-sm font-medium">Total Price:</div>
+                  <div className="text-3xl font-bold text-gray-900">
+                    {formatPrice(totalPrice)}
+                  </div>
                 </div>
                 <button 
                   className="w-full bg-indigo-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-indigo-700 transition-colors shadow-sm hover:shadow text-lg"

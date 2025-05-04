@@ -43,6 +43,10 @@ const StorePage: NextPage<Props> = ({ store }) => {
     }).format(price);
   };
 
+  const calculateTotalPrice = (basePrice: number, commissionRate: number) => {
+    return basePrice + commissionRate;
+  };
+
   return (
     <Layout title={store.name}>
       <div className="min-h-screen bg-gray-50">
@@ -108,7 +112,7 @@ const StorePage: NextPage<Props> = ({ store }) => {
                         </p>
                         <div className="flex justify-between items-center">
                           <span className="text-xl font-bold text-gray-900">
-                            {formatPrice(product.basePrice)}
+                            {formatPrice(calculateTotalPrice(product.basePrice, product.commissionRate))}
                           </span>
                         </div>
                       </div>
@@ -154,7 +158,7 @@ const StorePage: NextPage<Props> = ({ store }) => {
                     </p>
                     <div className="flex justify-between items-center">
                       <span className="text-xl font-bold text-gray-900">
-                        {formatPrice(product.basePrice)}
+                        {formatPrice(calculateTotalPrice(product.basePrice, product.commissionRate))}
                       </span>
                     </div>
                   </div>
