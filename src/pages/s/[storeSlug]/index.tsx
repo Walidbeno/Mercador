@@ -14,6 +14,7 @@ interface StoreProduct {
     commissionRate: number;
     imageUrl: string | null;
     thumbnailUrl: string | null;
+    hasCustomCommission?: boolean;
   };
   featured: boolean;
 }
@@ -162,6 +163,11 @@ const StorePage: NextPage<Props> = ({ store, affiliateId }) => {
                           <span className="text-xl font-bold text-gray-900">
                             {formatPrice(calculateTotalPrice(product.basePrice, product.commissionRate))}
                           </span>
+                          {product.hasCustomCommission && (
+                            <span className="ml-2 bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
+                              Custom
+                            </span>
+                          )}
                         </div>
                       </div>
 
@@ -208,6 +214,11 @@ const StorePage: NextPage<Props> = ({ store, affiliateId }) => {
                       <span className="text-xl font-bold text-gray-900">
                         {formatPrice(calculateTotalPrice(product.basePrice, product.commissionRate))}
                       </span>
+                      {product.hasCustomCommission && (
+                        <span className="ml-2 bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
+                          Custom
+                        </span>
+                      )}
                     </div>
                   </div>
 
@@ -242,6 +253,8 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
     const storeSlug = params?.storeSlug as string;
     const affiliateId = query.aff as string || ''; // Get affiliate ID from query if present
 
+    console.log(`Store page request: storeSlug=${storeSlug}, affiliateId=${affiliateId || 'none'}`);
+
     const store = await prisma.store.findUnique({
       where: { slug: storeSlug },
       include: {
@@ -266,6 +279,7 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
     });
 
     if (!store) {
+      console.log(`Store not found: storeSlug=${storeSlug}`);
       return {
         notFound: true
       };
@@ -277,6 +291,8 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
     // Fetch custom commissions if an affiliate ID is provided
     let customCommissions: Record<string, number> = {};
     if (affiliateId && productIds.length > 0) {
+      console.log(`Looking for custom commissions for ${productIds.length} products and affiliate ${affiliateId}`);
+      
       const affiliateCommissions = await prisma.affiliateProductCommission.findMany({
         where: {
           affiliateId,
@@ -294,6 +310,11 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
         acc[item.productId] = Number(item.commission);
         return acc;
       }, {});
+      
+      console.log(`Found ${affiliateCommissions.length} custom commissions for affiliate ${affiliateId}`);
+      affiliateCommissions.forEach(comm => {
+        console.log(`Custom commission for product ${comm.productId}: ${comm.commission}`);
+      });
     }
 
     // Convert Decimal values to numbers for JSON serialization and apply custom commissions
@@ -302,14 +323,20 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
       products: store.products.map(sp => {
         // Check if there's a custom commission for this product
         const customCommission = customCommissions[sp.product.id];
+        const defaultCommission = Number(sp.product.commissionRate);
+        const finalCommission = customCommission !== undefined ? customCommission : defaultCommission;
+        
+        if (customCommission !== undefined) {
+          console.log(`Using custom commission for product ${sp.product.id}: ${customCommission} (default: ${defaultCommission})`);
+        }
+        
         return {
           ...sp,
           product: {
             ...sp.product,
             basePrice: Number(sp.product.basePrice),
-            commissionRate: customCommission !== undefined 
-              ? customCommission 
-              : Number(sp.product.commissionRate)
+            commissionRate: finalCommission,
+            hasCustomCommission: customCommission !== undefined
           }
         };
       })

@@ -30,12 +30,13 @@ interface Props {
   store: Store;
   product: Product;
   affiliateId: string | null;
+  hasCustomCommission: boolean;
 }
 
-const ProductPage: NextPage<Props> = ({ store, product, affiliateId }) => {
+const ProductPage: NextPage<Props> = ({ store, product, affiliateId, hasCustomCommission }) => {
   // Get store language from settings or default to English
   const storeLanguage = store.settings?.language || 'en';
-
+  
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat(store.settings?.language || 'en', {
       style: 'currency',
@@ -161,7 +162,7 @@ const ProductPage: NextPage<Props> = ({ store, product, affiliateId }) => {
                   <div className="text-gray-600 text-sm">{getTranslation(storeLanguage, 'commission')}:</div>
                   <div className="text-xl font-semibold text-indigo-600 flex items-center">
                     + {formatPrice(product.commissionRate)}
-                    {affiliateId && (
+                    {hasCustomCommission && (
                       <span className="ml-2 bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
                         Custom
                       </span>
@@ -209,6 +210,8 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
     const productId = params?.productId as string;
     const affiliateId = query.aff as string || ''; // Get affiliate ID from query if available
 
+    console.log(`Product page request: storeSlug=${storeSlug}, productId=${productId}, affiliateId=${affiliateId || 'none'}`);
+
     const storeProduct = await prisma.storeProduct.findFirst({
       where: {
         product: { id: productId },
@@ -242,13 +245,18 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
     });
 
     if (!storeProduct) {
+      console.log(`Product not found: storeSlug=${storeSlug}, productId=${productId}`);
       return {
         notFound: true
       };
     }
 
+    // Get the default commission rate
+    const defaultCommissionRate = storeProduct.product.commissionRate;
+    
     // Check for custom commission if there's an affiliate ID
-    let commissionRate = storeProduct.product.commissionRate;
+    let commissionRate = defaultCommissionRate;
+    let hasCustomCommission = false;
     
     if (affiliateId) {
       console.log(`Looking for custom commission for product ${storeProduct.product.id} and affiliate ${affiliateId}`);
@@ -269,8 +277,9 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
 
       // If there's a custom commission and it's active, use it
       if (customCommission && customCommission.isActive) {
-        console.log(`Found custom commission: ${customCommission.commission}`);
         commissionRate = customCommission.commission;
+        hasCustomCommission = true;
+        console.log(`Found custom commission: ${commissionRate} (default was: ${defaultCommissionRate})`);
       } else {
         console.log(`No custom commission found, using default: ${commissionRate}`);
       }
@@ -283,11 +292,14 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
       commissionRate: Number(commissionRate)
     };
 
+    console.log(`Returning product with commission: ${serializedProduct.commissionRate} (hasCustomCommission: ${hasCustomCommission})`);
+
     return {
       props: {
         store: storeProduct.store,
         product: serializedProduct,
-        affiliateId: affiliateId || null
+        affiliateId: affiliateId || null,
+        hasCustomCommission: hasCustomCommission
       }
     };
   } catch (error) {
