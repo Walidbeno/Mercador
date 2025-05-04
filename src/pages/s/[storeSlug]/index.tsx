@@ -141,7 +141,7 @@ const StorePage: NextPage<Props> = ({ store, affiliateId }) => {
                   .map(({ id, product }) => (
                     <a 
                       key={id} 
-                      href={`/s/${store.id}/p/${product.id}`}
+                      href={`/s/${store.slug}/p/${product.id}${affiliateId ? `?aff=${affiliateId}` : ''}`}
                       className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow duration-200"
                     >
                       <div className="h-48 rounded-t-lg overflow-hidden">
@@ -168,7 +168,7 @@ const StorePage: NextPage<Props> = ({ store, affiliateId }) => {
                       {/* Add Order Now button */}
                       <div className="px-4 pb-4 mt-2">
                         <a 
-                          href={`/s/${store.id}/p/${product.id}`}
+                          href={`/s/${store.slug}/p/${product.id}${affiliateId ? `?aff=${affiliateId}` : ''}`}
                           className="block w-full bg-indigo-600 text-white text-center py-3 rounded-lg font-medium hover:bg-indigo-700 transition-colors shadow-sm hover:shadow"
                         >
                           {getTranslation(storeLanguage, 'orderNowButton')} →
@@ -187,7 +187,7 @@ const StorePage: NextPage<Props> = ({ store, affiliateId }) => {
               {store.products.map(({ id, product }) => (
                 <a 
                   key={id} 
-                  href={`/s/${store.id}/p/${product.id}`}
+                  href={`/s/${store.slug}/p/${product.id}${affiliateId ? `?aff=${affiliateId}` : ''}`}
                   className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow duration-200"
                 >
                   <div className="h-48 rounded-t-lg overflow-hidden">
@@ -214,7 +214,7 @@ const StorePage: NextPage<Props> = ({ store, affiliateId }) => {
                   {/* Add Order Now button */}
                   <div className="px-4 pb-4 mt-2">
                     <a 
-                      href={`/s/${store.id}/p/${product.id}`}
+                      href={`/s/${store.slug}/p/${product.id}${affiliateId ? `?aff=${affiliateId}` : ''}`}
                       className="block w-full bg-indigo-600 text-white text-center py-3 rounded-lg font-medium hover:bg-indigo-700 transition-colors shadow-sm hover:shadow"
                     >
                       {getTranslation(storeLanguage, 'orderNowButton')} →

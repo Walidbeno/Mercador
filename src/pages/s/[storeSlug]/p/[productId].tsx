@@ -159,8 +159,13 @@ const ProductPage: NextPage<Props> = ({ store, product, affiliateId }) => {
                 </div>
                 <div className="flex flex-col mb-4">
                   <div className="text-gray-600 text-sm">{getTranslation(storeLanguage, 'commission')}:</div>
-                  <div className="text-xl font-semibold text-indigo-600">
+                  <div className="text-xl font-semibold text-indigo-600 flex items-center">
                     + {formatPrice(product.commissionRate)}
+                    {affiliateId && (
+                      <span className="ml-2 bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
+                        Custom
+                      </span>
+                    )}
                   </div>
                 </div>
                 <div className="flex flex-col mb-4 pt-2 border-t border-gray-200">
@@ -176,7 +181,7 @@ const ProductPage: NextPage<Props> = ({ store, product, affiliateId }) => {
                     window.parent.postMessage('purchase_clicked', '*');
                   }}
                 >
-                  {getTranslation(storeLanguage, 'buyNowButton')} →
+                  {getTranslation(storeLanguage, 'orderNowButton')} →
                 </button>
               </div>
 
@@ -246,6 +251,8 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
     let commissionRate = storeProduct.product.commissionRate;
     
     if (affiliateId) {
+      console.log(`Looking for custom commission for product ${storeProduct.product.id} and affiliate ${affiliateId}`);
+      
       // Try to find a custom commission for this affiliate and product
       const customCommission = await prisma.affiliateProductCommission.findUnique({
         where: {
@@ -262,7 +269,10 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
 
       // If there's a custom commission and it's active, use it
       if (customCommission && customCommission.isActive) {
+        console.log(`Found custom commission: ${customCommission.commission}`);
         commissionRate = customCommission.commission;
+      } else {
+        console.log(`No custom commission found, using default: ${commissionRate}`);
       }
     }
 
