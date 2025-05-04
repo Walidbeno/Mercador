@@ -40,7 +40,7 @@ export const modernTemplate = (product: {
       ?.filter(section => section.position === position)
       .map(section => `
         <div class="py-12">
-          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 class="text-3xl font-bold text-gray-900 mb-6">${section.title}</h2>
             <div class="prose prose-lg max-w-none">
               ${section.content}
@@ -55,7 +55,7 @@ export const modernTemplate = (product: {
     
     return `
       <div class="bg-gray-50 py-16">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 class="text-3xl font-bold text-gray-900 text-center mb-12">What Our Customers Say</h2>
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             ${settings.testimonials.map(testimonial => `
@@ -93,7 +93,7 @@ export const modernTemplate = (product: {
 <body class="bg-gray-50">
     <!-- Hero Section -->
     <div class="bg-white">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
                 <div>
                     <h1 class="text-4xl font-bold text-gray-900 mb-6">${settings.customTitle || product.title}</h1>
@@ -133,7 +133,7 @@ export const modernTemplate = (product: {
 
     <!-- Key Features Section -->
     <div class="bg-white py-16">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 class="text-3xl font-bold text-gray-900 text-center mb-12">Key Features</h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div class="text-center p-6">
@@ -158,7 +158,7 @@ export const modernTemplate = (product: {
     ${showDescription ? `
     <!-- Description Section -->
     <div class="py-16">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="prose prose-lg max-w-none">
                 ${settings.customDescription || product.description}
             </div>
@@ -173,7 +173,7 @@ export const modernTemplate = (product: {
     ${showGallery && product.galleryUrls && product.galleryUrls.length > 0 ? `
     <!-- Gallery Section -->
     <div class="bg-white py-16">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 class="text-3xl font-bold text-gray-900 text-center mb-12">Gallery</h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                 ${product.galleryUrls.map(url => `
@@ -186,7 +186,7 @@ export const modernTemplate = (product: {
 
     <!-- FAQ Section -->
     <div class="bg-gray-50 py-16">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 class="text-3xl font-bold text-gray-900 text-center mb-12">Frequently Asked Questions</h2>
             <div class="grid gap-6 max-w-3xl mx-auto">
                 <div class="bg-white p-6 rounded-lg shadow-md">
@@ -209,7 +209,7 @@ export const modernTemplate = (product: {
 
     <!-- CTA Section -->
     <div id="buy-now" class="bg-indigo-700 py-16">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 class="text-3xl font-bold text-white mb-8">${settings.ctaText || 'Ready to Get Started?'}</h2>
             ${showCommission ? `
             <div class="space-y-4 mb-8">
@@ -231,7 +231,7 @@ export const modernTemplate = (product: {
 
     <!-- Trust Badges -->
     <div class="bg-white py-8">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-center items-center space-x-8">
                 <div class="text-center">
                     <div class="text-3xl mb-2">🔒</div>

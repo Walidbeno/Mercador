@@ -87,7 +87,7 @@ export const minimalTemplate = (product: {
     </style>
 </head>
 <body class="bg-white">
-    <div class="max-w-4xl mx-auto px-4 py-12">
+    <div class="max-w-5xl mx-auto px-4 py-12">
         <!-- Hero Section -->
         <div class="text-center mb-16">
             <h1 class="text-4xl font-bold text-gray-900 mb-6">${settings.customTitle || product.title}</h1>
