@@ -2,7 +2,7 @@ import { GetServerSideProps, NextPage } from 'next';
 import prisma from '@/lib/prisma';
 import Layout from '@/components/Layout';
 import { getTranslation } from '@/lib/translations';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 interface StoreProduct {
   id: string;
@@ -42,6 +42,10 @@ interface Props {
 const CataloguePage: NextPage<Props> = ({ store, affiliateId }) => {
   // Get store language from settings or default to English
   const storeLanguage = store.settings?.language || 'en';
+  
+  // Add state for the test affiliate ID
+  const [testAffiliateId, setTestAffiliateId] = useState('');
+  const [showTestBanner, setShowTestBanner] = useState(true);
 
   // Log affiliate ID information to the client console for debugging
   useEffect(() => {
@@ -67,10 +71,45 @@ const CataloguePage: NextPage<Props> = ({ store, affiliateId }) => {
   const calculateTotalPrice = (basePrice: number, commissionRate: number) => {
     return basePrice + commissionRate;
   };
+  
+  // Function to apply test affiliate ID
+  const applyTestAffiliateId = () => {
+    if (testAffiliateId) {
+      window.location.href = `${window.location.pathname}?aff=${testAffiliateId}`;
+    }
+  };
 
   return (
     <Layout title={`${getTranslation(storeLanguage, 'cataloguePageTitle')} | ${store.name}`}>
       <div className="min-h-screen bg-gray-50">
+        {!affiliateId && showTestBanner && (
+          <div className="bg-yellow-100 p-4">
+            <div className="max-w-5xl mx-auto flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <span>Test a specific affiliate ID:</span>
+                <input
+                  type="text"
+                  value={testAffiliateId}
+                  onChange={(e) => setTestAffiliateId(e.target.value)}
+                  placeholder="Enter affiliate ID"
+                  className="border px-2 py-1 rounded"
+                />
+                <button
+                  onClick={applyTestAffiliateId}
+                  className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
+                >
+                  Apply
+                </button>
+              </div>
+              <button
+                onClick={() => setShowTestBanner(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+        )}
         {/* Store Header */}
         <div className="bg-white shadow">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
