@@ -64,7 +64,7 @@ const StorePage: NextPage<Props> = ({ store }) => {
                 <img 
                   src={store.logo} 
                   alt={store.name} 
-                  className="h-48 w-auto object-contain"
+                  className="h-26 w-auto object-contain"
                 />
               </div>
             ) : (
