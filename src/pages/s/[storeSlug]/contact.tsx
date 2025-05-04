@@ -2,6 +2,7 @@ import { GetServerSideProps, NextPage } from 'next';
 import prisma from '@/lib/prisma';
 import Layout from '@/components/Layout';
 import { useState } from 'react';
+import { getTranslation } from '@/lib/translations';
 
 interface Store {
   id: string;
@@ -27,6 +28,9 @@ const ContactPage: NextPage<Props> = ({ store }) => {
   });
   const [isSubmitted, setIsSubmitted] = useState(false);
 
+  // Get store language from settings or default to English
+  const storeLanguage = store.settings?.language || 'en';
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormState(prev => ({ ...prev, [name]: value }));
@@ -40,7 +44,7 @@ const ContactPage: NextPage<Props> = ({ store }) => {
   };
 
   return (
-    <Layout title={`Contact us | ${store.name}`}>
+    <Layout title={`${getTranslation(storeLanguage, 'contactPageTitle')} | ${store.name}`}>
       <div className="min-h-screen bg-gray-50">
         {/* Store Header */}
         <div className="bg-white shadow">
@@ -66,19 +70,19 @@ const ContactPage: NextPage<Props> = ({ store }) => {
                   href={`/s/${store.slug}`} 
                   className="text-gray-600 font-medium hover:text-indigo-600 transition-colors"
                 >
-                  Home
+                  {getTranslation(storeLanguage, 'home')}
                 </a>
                 <a 
                   href={`/s/${store.slug}/policy`} 
                   className="text-gray-600 font-medium hover:text-indigo-600 transition-colors"
                 >
-                  Política de venta
+                  {getTranslation(storeLanguage, 'policy')}
                 </a>
                 <a 
                   href={`/s/${store.slug}/contact`} 
                   className="text-indigo-600 font-medium hover:text-indigo-800 transition-colors"
                 >
-                  Contact us
+                  {getTranslation(storeLanguage, 'contact')}
                 </a>
               </nav>
             </div>
@@ -88,19 +92,19 @@ const ContactPage: NextPage<Props> = ({ store }) => {
         {/* Content */}
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="bg-white shadow rounded-lg p-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-6">Contact us</h1>
+            <h1 className="text-3xl font-bold text-gray-900 mb-6">{getTranslation(storeLanguage, 'contactPageTitle')}</h1>
             
             {isSubmitted ? (
               <div className="bg-green-50 border border-green-200 text-green-700 p-6 rounded-lg">
-                <h3 className="text-xl font-medium mb-2">Thank you for your message!</h3>
-                <p>We have received your inquiry and will get back to you as soon as possible.</p>
+                <h3 className="text-xl font-medium mb-2">{getTranslation(storeLanguage, 'thankYouTitle')}</h3>
+                <p>{getTranslation(storeLanguage, 'thankYouMessage')}</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                 <div>
-                  <h2 className="text-xl font-semibold mb-4">Get in touch</h2>
+                  <h2 className="text-xl font-semibold mb-4">{getTranslation(storeLanguage, 'contactFormTitle')}</h2>
                   <p className="text-gray-600 mb-6">
-                    Have questions about our products or services? Fill out the form and our team will get back to you as soon as possible.
+                    {getTranslation(storeLanguage, 'contactFormSubtitle')}
                   </p>
                   
                   <div className="space-y-4">
@@ -122,7 +126,9 @@ const ContactPage: NextPage<Props> = ({ store }) => {
                 <div>
                   <form onSubmit={handleSubmit} className="space-y-6">
                     <div>
-                      <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                      <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                        {getTranslation(storeLanguage, 'nameLabel')}
+                      </label>
                       <input
                         type="text"
                         id="name"
@@ -135,7 +141,9 @@ const ContactPage: NextPage<Props> = ({ store }) => {
                     </div>
                     
                     <div>
-                      <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                      <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                        {getTranslation(storeLanguage, 'emailLabel')}
+                      </label>
                       <input
                         type="email"
                         id="email"
@@ -148,7 +156,9 @@ const ContactPage: NextPage<Props> = ({ store }) => {
                     </div>
                     
                     <div>
-                      <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">Message</label>
+                      <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">
+                        {getTranslation(storeLanguage, 'messageLabel')}
+                      </label>
                       <textarea
                         id="message"
                         name="message"
@@ -164,7 +174,7 @@ const ContactPage: NextPage<Props> = ({ store }) => {
                       type="submit"
                       className="w-full bg-indigo-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-indigo-700 transition-colors"
                     >
-                      Send Message
+                      {getTranslation(storeLanguage, 'sendButton')}
                     </button>
                   </form>
                 </div>

@@ -1,6 +1,7 @@
 import { GetServerSideProps, NextPage } from 'next';
 import prisma from '@/lib/prisma';
 import Layout from '@/components/Layout';
+import { getTranslation } from '@/lib/translations';
 
 interface Product {
   id: string;
@@ -32,6 +33,9 @@ interface Props {
 }
 
 const ProductPage: NextPage<Props> = ({ store, product, affiliateId }) => {
+  // Get store language from settings or default to English
+  const storeLanguage = store.settings?.language || 'en';
+
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat(store.settings?.language || 'en', {
       style: 'currency',
@@ -74,19 +78,19 @@ const ProductPage: NextPage<Props> = ({ store, product, affiliateId }) => {
                   href={`/s/${store.slug}`} 
                   className="text-gray-600 font-medium hover:text-indigo-600 transition-colors"
                 >
-                  Home
+                  {getTranslation(storeLanguage, 'home')}
                 </a>
                 <a 
                   href={`/s/${store.slug}/policy`} 
                   className="text-gray-600 font-medium hover:text-indigo-600 transition-colors"
                 >
-                  Política de venta
+                  {getTranslation(storeLanguage, 'policy')}
                 </a>
                 <a 
                   href={`/s/${store.slug}/contact`} 
                   className="text-gray-600 font-medium hover:text-indigo-600 transition-colors"
                 >
-                  Contact us
+                  {getTranslation(storeLanguage, 'contact')}
                 </a>
               </nav>
             </div>
@@ -130,19 +134,19 @@ const ProductPage: NextPage<Props> = ({ store, product, affiliateId }) => {
 
               <div className="bg-white rounded-lg shadow p-6 mb-8">
                 <div className="flex flex-col mb-4">
-                  <div className="text-gray-600 text-sm">Base Price:</div>
+                  <div className="text-gray-600 text-sm">{getTranslation(storeLanguage, 'basePrice')}:</div>
                   <div className="text-2xl font-bold text-gray-700">
                     {formatPrice(product.basePrice)}
                   </div>
                 </div>
                 <div className="flex flex-col mb-4">
-                  <div className="text-gray-600 text-sm">Commission:</div>
+                  <div className="text-gray-600 text-sm">{getTranslation(storeLanguage, 'commission')}:</div>
                   <div className="text-xl font-semibold text-indigo-600">
                     + {formatPrice(product.commissionRate)}
                   </div>
                 </div>
                 <div className="flex flex-col mb-4 pt-2 border-t border-gray-200">
-                  <div className="text-gray-700 text-sm font-medium">Total Price:</div>
+                  <div className="text-gray-700 text-sm font-medium">{getTranslation(storeLanguage, 'totalPrice')}:</div>
                   <div className="text-3xl font-bold text-gray-900">
                     {formatPrice(totalPrice)}
                   </div>
@@ -154,7 +158,7 @@ const ProductPage: NextPage<Props> = ({ store, product, affiliateId }) => {
                     window.parent.postMessage('purchase_clicked', '*');
                   }}
                 >
-                  Buy Now →
+                  {getTranslation(storeLanguage, 'buyNowButton')} →
                 </button>
               </div>
 

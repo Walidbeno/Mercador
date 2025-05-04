@@ -1,6 +1,7 @@
 import { GetServerSideProps, NextPage } from 'next';
 import prisma from '@/lib/prisma';
 import Layout from '@/components/Layout';
+import { getTranslation } from '@/lib/translations';
 
 interface Store {
   id: string;
@@ -19,8 +20,11 @@ interface Props {
 }
 
 const PolicyPage: NextPage<Props> = ({ store }) => {
+  // Get store language from settings or default to English
+  const storeLanguage = store.settings?.language || 'en';
+
   return (
-    <Layout title={`Política de venta | ${store.name}`}>
+    <Layout title={`${getTranslation(storeLanguage, 'policyPageTitle')} | ${store.name}`}>
       <div className="min-h-screen bg-gray-50">
         {/* Store Header */}
         <div className="bg-white shadow">
@@ -46,19 +50,19 @@ const PolicyPage: NextPage<Props> = ({ store }) => {
                   href={`/s/${store.slug}`} 
                   className="text-gray-600 font-medium hover:text-indigo-600 transition-colors"
                 >
-                  Home
+                  {getTranslation(storeLanguage, 'home')}
                 </a>
                 <a 
                   href={`/s/${store.slug}/policy`} 
                   className="text-indigo-600 font-medium hover:text-indigo-800 transition-colors"
                 >
-                  Política de venta
+                  {getTranslation(storeLanguage, 'policy')}
                 </a>
                 <a 
                   href={`/s/${store.slug}/contact`} 
                   className="text-gray-600 font-medium hover:text-indigo-600 transition-colors"
                 >
-                  Contact us
+                  {getTranslation(storeLanguage, 'contact')}
                 </a>
               </nav>
             </div>
@@ -68,10 +72,10 @@ const PolicyPage: NextPage<Props> = ({ store }) => {
         {/* Content */}
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="bg-white shadow rounded-lg p-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-6">Política de venta</h1>
+            <h1 className="text-3xl font-bold text-gray-900 mb-6">{getTranslation(storeLanguage, 'policyPageTitle')}</h1>
             
             <div className="prose prose-lg max-w-none">
-              <h2>Términos y Condiciones</h2>
+              <h2>{getTranslation(storeLanguage, 'termsTitle')}</h2>
               <p>Bienvenido a nuestra tienda. A continuación, se detallan los términos y condiciones que rigen la compra de productos en nuestra plataforma.</p>
               
               <h3>1. Proceso de Compra</h3>

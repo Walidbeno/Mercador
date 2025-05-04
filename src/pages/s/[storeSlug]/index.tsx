@@ -1,6 +1,7 @@
 import { GetServerSideProps, NextPage } from 'next';
 import prisma from '@/lib/prisma';
 import Layout from '@/components/Layout';
+import { getTranslation } from '@/lib/translations';
 
 interface StoreProduct {
   id: string;
@@ -38,6 +39,9 @@ interface Props {
 }
 
 const StorePage: NextPage<Props> = ({ store, affiliateId }) => {
+  // Get store language from settings or default to English
+  const storeLanguage = store.settings?.language || 'en';
+
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat(store.settings?.language || 'en', {
       style: 'currency',
@@ -89,19 +93,19 @@ const StorePage: NextPage<Props> = ({ store, affiliateId }) => {
                   href={`/s/${store.slug}`} 
                   className="text-indigo-600 font-medium hover:text-indigo-800 transition-colors"
                 >
-                  Home
+                  {getTranslation(storeLanguage, 'home')}
                 </a>
                 <a 
                   href={`/s/${store.slug}/policy`} 
                   className="text-gray-600 font-medium hover:text-indigo-600 transition-colors"
                 >
-                  Política de venta
+                  {getTranslation(storeLanguage, 'policy')}
                 </a>
                 <a 
                   href={`/s/${store.slug}/contact`} 
                   className="text-gray-600 font-medium hover:text-indigo-600 transition-colors"
                 >
-                  Contact us
+                  {getTranslation(storeLanguage, 'contact')}
                 </a>
               </nav>
             </div>
