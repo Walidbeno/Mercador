@@ -13,9 +13,13 @@ export const navTranslations: NavTranslations = {
     home: 'Home',
     policy: 'Sales Policy',
     contact: 'Contact Us',
+    catalogue: 'Products',
+    shipping: 'Shipping',
     // Page titles
     contactPageTitle: 'Contact Us',
     policyPageTitle: 'Sales Policy',
+    cataloguePageTitle: 'Our Products',
+    shippingPageTitle: 'Shipping Policy',
     // Contact form
     contactFormTitle: 'Get in touch',
     contactFormSubtitle: 'Have questions about our products or services? Fill out the form and our team will get back to you as soon as possible.',
@@ -37,9 +41,13 @@ export const navTranslations: NavTranslations = {
     home: 'Inicio',
     policy: 'Política de Venta',
     contact: 'Contáctenos',
+    catalogue: 'Productos',
+    shipping: 'Envíos',
     // Page titles
     contactPageTitle: 'Contacto',
     policyPageTitle: 'Política de Venta',
+    cataloguePageTitle: 'Nuestros Productos',
+    shippingPageTitle: 'Política de Envío',
     // Contact form
     contactFormTitle: 'Póngase en contacto',
     contactFormSubtitle: '¿Tiene preguntas sobre nuestros productos o servicios? Complete el formulario y nuestro equipo se comunicará con usted lo antes posible.',
@@ -61,9 +69,13 @@ export const navTranslations: NavTranslations = {
     home: 'Accueil',
     policy: 'Politique de Vente',
     contact: 'Contactez-nous',
+    catalogue: 'Produits',
+    shipping: 'Livraison',
     // Page titles
     contactPageTitle: 'Contactez-nous',
     policyPageTitle: 'Politique de Vente',
+    cataloguePageTitle: 'Nos Produits',
+    shippingPageTitle: 'Politique de Livraison',
     // Contact form
     contactFormTitle: 'Prendre contact',
     contactFormSubtitle: 'Vous avez des questions sur nos produits ou services? Remplissez le formulaire et notre équipe vous répondra dans les plus brefs délais.',
@@ -85,9 +97,13 @@ export const navTranslations: NavTranslations = {
     home: 'Início',
     policy: 'Política de Vendas',
     contact: 'Contate-nos',
+    catalogue: 'Produtos',
+    shipping: 'Envio',
     // Page titles
     contactPageTitle: 'Contate-nos',
     policyPageTitle: 'Política de Vendas',
+    cataloguePageTitle: 'Nossos Produtos',
+    shippingPageTitle: 'Política de Envio',
     // Contact form
     contactFormTitle: 'Entre em contato',
     contactFormSubtitle: 'Tem dúvidas sobre nossos produtos ou serviços? Preencha o formulário e nossa equipe entrará em contato o mais breve possível.',
@@ -109,9 +125,13 @@ export const navTranslations: NavTranslations = {
     home: 'Startseite',
     policy: 'Verkaufsbedingungen',
     contact: 'Kontakt',
+    catalogue: 'Produkte',
+    shipping: 'Versand',
     // Page titles
     contactPageTitle: 'Kontakt',
     policyPageTitle: 'Verkaufsbedingungen',
+    cataloguePageTitle: 'Unsere Produkte',
+    shippingPageTitle: 'Versandrichtlinien',
     // Contact form
     contactFormTitle: 'Kontakt aufnehmen',
     contactFormSubtitle: 'Haben Sie Fragen zu unseren Produkten oder Dienstleistungen? Füllen Sie das Formular aus und unser Team wird sich so schnell wie möglich bei Ihnen melden.',
@@ -133,9 +153,13 @@ export const navTranslations: NavTranslations = {
     home: 'Home',
     policy: 'Politica di Vendita',
     contact: 'Contattaci',
+    catalogue: 'Prodotti',
+    shipping: 'Spedizione',
     // Page titles
     contactPageTitle: 'Contattaci',
     policyPageTitle: 'Politica di Vendita',
+    cataloguePageTitle: 'I Nostri Prodotti',
+    shippingPageTitle: 'Politica di Spedizione',
     // Contact form
     contactFormTitle: 'Mettiti in contatto',
     contactFormSubtitle: 'Hai domande sui nostri prodotti o servizi? Compila il modulo e il nostro team ti risponderà il prima possibile.',
