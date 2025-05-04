@@ -108,6 +108,16 @@ const StorePage: NextPage<Props> = ({ store }) => {
                         </span>
                       </div>
                     </div>
+
+                    {/* Add Order Now button */}
+                    <div className="px-4 pb-4 mt-2">
+                      <a 
+                        href={`/s/${store.id}/p/${product.id}`}
+                        className="block w-full bg-indigo-600 text-white text-center py-3 rounded-lg font-medium hover:bg-indigo-700 transition-colors shadow-sm hover:shadow"
+                      >
+                        Order Now →
+                      </a>
+                    </div>
                   </a>
                 ))}
             </div>
@@ -143,6 +153,16 @@ const StorePage: NextPage<Props> = ({ store }) => {
                       {formatPrice(product.basePrice)}
                     </span>
                   </div>
+                </div>
+
+                {/* Add Order Now button */}
+                <div className="px-4 pb-4 mt-2">
+                  <a 
+                    href={`/s/${store.id}/p/${product.id}`}
+                    className="block w-full bg-indigo-600 text-white text-center py-3 rounded-lg font-medium hover:bg-indigo-700 transition-colors shadow-sm hover:shadow"
+                  >
+                    Order Now →
+                  </a>
                 </div>
               </a>
             ))}

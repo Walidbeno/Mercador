@@ -91,13 +91,13 @@ const ProductPage: NextPage<Props> = ({ store, product }) => {
                 {formatPrice(product.basePrice)}
               </div>
               <button 
-                className="w-full bg-indigo-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-indigo-700 transition-colors"
+                className="w-full bg-indigo-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-indigo-700 transition-colors shadow-sm hover:shadow text-lg"
                 onClick={() => {
                   // Handle purchase/add to cart
                   window.parent.postMessage('purchase_clicked', '*');
                 }}
               >
-                Buy Now
+                Buy Now →
               </button>
             </div>
 
