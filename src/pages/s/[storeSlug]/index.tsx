@@ -63,7 +63,7 @@ const StorePage: NextPage<Props> = ({ store }) => {
                 <img 
                   src={store.logo} 
                   alt={store.name} 
-                  className="h-16 w-16 rounded-full object-cover border border-gray-200"
+                  className="h-48 w-full rounded-full object-cover border border-gray-200"
                 />
               )}
               <div>
