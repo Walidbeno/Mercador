@@ -50,7 +50,7 @@ const StorePage: NextPage<Props> = ({ store }) => {
         <div className="bg-white shadow">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             {store.banner && (
-              <div className="h-48 w-full rounded-lg overflow-hidden mb-6">
+              <div className="h-48 w-full rounded-lg overflow-hidden mb-8">
                 <img 
                   src={store.banner} 
                   alt={store.name} 
@@ -58,21 +58,27 @@ const StorePage: NextPage<Props> = ({ store }) => {
                 />
               </div>
             )}
-            <div className="flex items-center space-x-4">
-              {store.logo && (
+            
+            {store.logo ? (
+              <div className="flex flex-col items-center w-full">
                 <img 
                   src={store.logo} 
                   alt={store.name} 
-                  className="h-48 w-full rounded-full object-cover border border-gray-200"
+                  className="h-32 w-32 rounded-full object-cover border-2 border-gray-200 shadow-md"
                 />
-              )}
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900">{store.name}</h1>
+                <h2 className="mt-4 text-2xl font-bold text-gray-900">{store.name}</h2>
                 {store.description && (
-                  <p className="mt-2 text-gray-600">{store.description}</p>
+                  <p className="mt-2 text-gray-600 text-center max-w-2xl">{store.description}</p>
                 )}
               </div>
-            </div>
+            ) : (
+              <div className="w-full text-center">
+                <h1 className="text-4xl font-bold text-gray-900">{store.name}</h1>
+                {store.description && (
+                  <p className="mt-2 text-gray-600 max-w-2xl mx-auto">{store.description}</p>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
@@ -242,4 +248,4 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
   }
 };
 
-export default StorePage; 
+export default StorePage;
