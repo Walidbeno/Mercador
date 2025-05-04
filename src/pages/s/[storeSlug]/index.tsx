@@ -33,9 +33,10 @@ interface Store {
 
 interface Props {
   store: Store;
+  affiliateId: string | null;
 }
 
-const StorePage: NextPage<Props> = ({ store }) => {
+const StorePage: NextPage<Props> = ({ store, affiliateId }) => {
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat(store.settings?.language || 'en', {
       style: 'currency',
@@ -189,9 +190,10 @@ const StorePage: NextPage<Props> = ({ store }) => {
   );
 };
 
-export const getServerSideProps: GetServerSideProps = async ({ params }) => {
+export const getServerSideProps: GetServerSideProps = async ({ params, query }) => {
   try {
     const storeSlug = params?.storeSlug as string;
+    const affiliateId = query.aff as string || ''; // Get affiliate ID from query if present
 
     const store = await prisma.store.findUnique({
       where: { slug: storeSlug },
@@ -222,22 +224,54 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
       };
     }
 
-    // Convert Decimal values to numbers for JSON serialization
+    // Get product IDs to check for custom commissions
+    const productIds = store.products.map(sp => sp.product.id);
+    
+    // Fetch custom commissions if an affiliate ID is provided
+    let customCommissions: Record<string, number> = {};
+    if (affiliateId && productIds.length > 0) {
+      const affiliateCommissions = await prisma.affiliateProductCommission.findMany({
+        where: {
+          affiliateId,
+          productId: { in: productIds },
+          isActive: true
+        },
+        select: {
+          productId: true,
+          commission: true
+        }
+      });
+      
+      // Create a map of product ID to custom commission
+      customCommissions = affiliateCommissions.reduce((acc: Record<string, number>, item) => {
+        acc[item.productId] = Number(item.commission);
+        return acc;
+      }, {});
+    }
+
+    // Convert Decimal values to numbers for JSON serialization and apply custom commissions
     const serializedStore = {
       ...store,
-      products: store.products.map(sp => ({
-        ...sp,
-        product: {
-          ...sp.product,
-          basePrice: Number(sp.product.basePrice),
-          commissionRate: Number(sp.product.commissionRate)
-        }
-      }))
+      products: store.products.map(sp => {
+        // Check if there's a custom commission for this product
+        const customCommission = customCommissions[sp.product.id];
+        return {
+          ...sp,
+          product: {
+            ...sp.product,
+            basePrice: Number(sp.product.basePrice),
+            commissionRate: customCommission !== undefined 
+              ? customCommission 
+              : Number(sp.product.commissionRate)
+          }
+        };
+      })
     };
 
     return {
       props: {
-        store: serializedStore
+        store: serializedStore,
+        affiliateId: affiliateId || null
       }
     };
   } catch (error) {

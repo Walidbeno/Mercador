@@ -28,9 +28,10 @@ interface Store {
 interface Props {
   store: Store;
   product: Product;
+  affiliateId: string | null;
 }
 
-const ProductPage: NextPage<Props> = ({ store, product }) => {
+const ProductPage: NextPage<Props> = ({ store, product, affiliateId }) => {
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat(store.settings?.language || 'en', {
       style: 'currency',
@@ -151,10 +152,11 @@ const ProductPage: NextPage<Props> = ({ store, product }) => {
   );
 };
 
-export const getServerSideProps: GetServerSideProps = async ({ params }) => {
+export const getServerSideProps: GetServerSideProps = async ({ params, query }) => {
   try {
     const storeSlug = params?.storeSlug as string;
     const productId = params?.productId as string;
+    const affiliateId = query.aff as string || ''; // Get affiliate ID from query if available
 
     const storeProduct = await prisma.storeProduct.findFirst({
       where: {
@@ -194,17 +196,42 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
       };
     }
 
+    // Check for custom commission if there's an affiliate ID
+    let commissionRate = storeProduct.product.commissionRate;
+    
+    if (affiliateId) {
+      // Try to find a custom commission for this affiliate and product
+      const customCommission = await prisma.affiliateProductCommission.findUnique({
+        where: {
+          productId_affiliateId: {
+            productId: storeProduct.product.id,
+            affiliateId: affiliateId
+          }
+        },
+        select: {
+          commission: true,
+          isActive: true
+        }
+      });
+
+      // If there's a custom commission and it's active, use it
+      if (customCommission && customCommission.isActive) {
+        commissionRate = customCommission.commission;
+      }
+    }
+
     // Convert Decimal values to numbers for JSON serialization
     const serializedProduct = {
       ...storeProduct.product,
       basePrice: Number(storeProduct.product.basePrice),
-      commissionRate: Number(storeProduct.product.commissionRate)
+      commissionRate: Number(commissionRate)
     };
 
     return {
       props: {
         store: storeProduct.store,
-        product: serializedProduct
+        product: serializedProduct,
+        affiliateId: affiliateId || null
       }
     };
   } catch (error) {
