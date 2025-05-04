@@ -3,6 +3,8 @@ import prisma from '@/lib/prisma';
 import Layout from '@/components/Layout';
 import { getTranslation } from '@/lib/translations';
 import { useEffect, useState } from 'react';
+import { ThemeProvider } from '@/context/ThemeContext';
+import Button from '@/components/Button';
 
 interface StoreProduct {
   id: string;
@@ -31,6 +33,8 @@ interface Store {
   settings: {
     currency: string;
     language: string;
+    primaryColor?: string;
+    secondaryColor?: string;
   };
   products: StoreProduct[];
 }
@@ -44,6 +48,10 @@ const StorePage: NextPage<Props> = ({ store, affiliateId }) => {
   // Get store language from settings or default to English
   const storeLanguage = store.settings?.language || 'en';
   
+  // Extract theme colors from store settings or theme
+  const primaryColor = store.theme?.primaryColor || store.settings?.primaryColor || '#4f46e5';
+  const secondaryColor = store.theme?.secondaryColor || store.settings?.secondaryColor || '#3730a3';
+  
   // Add state for the test affiliate ID
   const [testAffiliateId, setTestAffiliateId] = useState('');
   const [showTestBanner, setShowTestBanner] = useState(true);
@@ -51,6 +59,7 @@ const StorePage: NextPage<Props> = ({ store, affiliateId }) => {
   // Log affiliate ID information to the client console for debugging
   useEffect(() => {
     console.log('Home Page loaded with affiliate ID:', affiliateId);
+    console.log('Using theme colors:', { primaryColor, secondaryColor });
     // Add affiliate ID to all product links dynamically
     if (affiliateId) {
       document.querySelectorAll('a[href^="/s/"]').forEach(link => {
@@ -60,7 +69,7 @@ const StorePage: NextPage<Props> = ({ store, affiliateId }) => {
         }
       });
     }
-  }, [affiliateId]);
+  }, [affiliateId, primaryColor, secondaryColor]);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat(store.settings?.language || 'en', {
@@ -81,237 +90,240 @@ const StorePage: NextPage<Props> = ({ store, affiliateId }) => {
   };
 
   return (
-    <Layout title={store.name}>
-      <div className="min-h-screen bg-gray-50">
-        {!affiliateId && showTestBanner && (
-          <div className="bg-yellow-100 p-4">
-            <div className="max-w-5xl mx-auto flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <span>Test a specific affiliate ID:</span>
-                <input
-                  type="text"
-                  value={testAffiliateId}
-                  onChange={(e) => setTestAffiliateId(e.target.value)}
-                  placeholder="Enter affiliate ID"
-                  className="border px-2 py-1 rounded"
-                />
-                <button
-                  onClick={applyTestAffiliateId}
-                  className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
-                >
-                  Apply
-                </button>
-                {/* Quick button to use 0b7f3250-8512-41ee-aa44-a389c34b5bc8 */}
-                <button
-                  onClick={() => {
-                    window.location.href = `${window.location.pathname}?aff=0b7f3250-8512-41ee-aa44-a389c34b5bc8`;
-                  }}
-                  className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600"
-                >
-                  Use Available Affiliate ID
-                </button>
-              </div>
-              <button
-                onClick={() => setShowTestBanner(false)}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                ✕
-              </button>
-            </div>
-          </div>
-        )}
-        {/* Store Header */}
-        <div className="bg-white shadow">
-          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            {store.banner && (
-              <div className="h-48 w-full rounded-lg overflow-hidden mb-8">
-                <img 
-                  src={store.banner} 
-                  alt={store.name} 
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            )}
-            
-            {store.logo ? (
-              <div className="flex flex-col items-center w-full">
-                <a href={`/s/${store.slug}${affiliateId ? `?aff=${affiliateId}` : ''}`}>
-                  <img 
-                    src={store.logo} 
-                    alt={store.name} 
-                    className="h-26 w-auto object-contain"
+    <ThemeProvider theme={{ primaryColor, secondaryColor }}>
+      <Layout title={store.name}>
+        <div className="min-h-screen bg-gray-50">
+          {!affiliateId && showTestBanner && (
+            <div className="bg-yellow-100 p-4">
+              <div className="max-w-5xl mx-auto flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <span>Test a specific affiliate ID:</span>
+                  <input
+                    type="text"
+                    value={testAffiliateId}
+                    onChange={(e) => setTestAffiliateId(e.target.value)}
+                    placeholder="Enter affiliate ID"
+                    className="border px-2 py-1 rounded"
                   />
-                </a>
-              </div>
-            ) : (
-              <div className="w-full text-center">
-                <a href={`/s/${store.slug}${affiliateId ? `?aff=${affiliateId}` : ''}`} className="text-gray-900 hover:text-indigo-600">
-                  <h1 className="text-4xl font-bold text-gray-900">{store.name}</h1>
-                </a>
-                {store.description && (
-                  <p className="mt-2 text-gray-600 max-w-2xl mx-auto">{store.description}</p>
-                )}
-              </div>
-            )}
-            
-            {/* Navigation Menu */}
-            <div className="mt-8 border-t border-b border-gray-200 py-4">
-              <nav className="flex justify-center space-x-12">
-                <a 
-                  href={`/s/${store.slug}${affiliateId ? `?aff=${affiliateId}` : ''}`} 
-                  className="text-indigo-600 font-medium hover:text-indigo-800 transition-colors"
+                  <Button
+                    onClick={applyTestAffiliateId}
+                    size="sm"
+                  >
+                    Apply
+                  </Button>
+                  {/* Quick button to use 0b7f3250-8512-41ee-aa44-a389c34b5bc8 */}
+                  <Button
+                    onClick={() => {
+                      window.location.href = `${window.location.pathname}?aff=0b7f3250-8512-41ee-aa44-a389c34b5bc8`;
+                    }}
+                    variant="secondary"
+                    size="sm"
+                  >
+                    Use Available Affiliate ID
+                  </Button>
+                </div>
+                <button
+                  onClick={() => setShowTestBanner(false)}
+                  className="text-gray-500 hover:text-gray-700"
                 >
-                  {getTranslation(storeLanguage, 'home')}
-                </a>
-                <a 
-                  href={`/s/${store.slug}/catalogue${affiliateId ? `?aff=${affiliateId}` : ''}`} 
-                  className="text-gray-600 font-medium hover:text-indigo-600 transition-colors"
-                >
-                  {getTranslation(storeLanguage, 'catalogue')}
-                </a>
-                <a 
-                  href={`/s/${store.slug}/about${affiliateId ? `?aff=${affiliateId}` : ''}`} 
-                  className="text-gray-600 font-medium hover:text-indigo-600 transition-colors"
-                >
-                  {getTranslation(storeLanguage, 'about')}
-                </a>
-                <a 
-                  href={`/s/${store.slug}/policy${affiliateId ? `?aff=${affiliateId}` : ''}`} 
-                  className="text-gray-600 font-medium hover:text-indigo-600 transition-colors"
-                >
-                  {getTranslation(storeLanguage, 'policy')}
-                </a>
-                <a 
-                  href={`/s/${store.slug}/shipping${affiliateId ? `?aff=${affiliateId}` : ''}`} 
-                  className="text-gray-600 font-medium hover:text-indigo-600 transition-colors"
-                >
-                  {getTranslation(storeLanguage, 'shipping')}
-                </a>
-                <a 
-                  href={`/s/${store.slug}/contact${affiliateId ? `?aff=${affiliateId}` : ''}`} 
-                  className="text-gray-600 font-medium hover:text-indigo-600 transition-colors"
-                >
-                  {getTranslation(storeLanguage, 'contact')}
-                </a>
-              </nav>
-            </div>
-          </div>
-        </div>
-
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Featured Products */}
-          {store.products.some(p => p.featured) && (
-            <div className="py-12">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Featured Products</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {store.products
-                  .filter(p => p.featured)
-                  .map(({ id, product }) => (
-                    <a 
-                      key={id} 
-                      href={`/s/${store.slug}/p/${product.id}${affiliateId ? `?aff=${affiliateId}` : ''}`}
-                      className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow duration-200"
-                    >
-                      <div className="h-48 rounded-t-lg overflow-hidden">
-                        <img 
-                          src={product.imageUrl || product.thumbnailUrl || '/images/placeholder.jpg'} 
-                          alt={product.title}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <div className="p-4">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                          {product.title}
-                        </h3>
-                        <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                          {product.shortDescription || product.description}
-                        </p>
-                        <div className="flex justify-between items-center">
-                          <span className="text-xl font-bold text-gray-900">
-                            {formatPrice(calculateTotalPrice(product.basePrice, product.commissionRate))}
-                          </span>
-                          {product.hasCustomCommission && (
-                            <span className="ml-2 bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
-                              Custom
-                            </span>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Add Order Now button */}
-                      <div className="px-4 pb-4 mt-2">
-                        <a 
-                          href={`/s/${store.slug}/p/${product.id}${affiliateId ? `?aff=${affiliateId}` : ''}`}
-                          className="block w-full bg-indigo-600 text-white text-center py-3 rounded-lg font-medium hover:bg-indigo-700 transition-colors shadow-sm hover:shadow"
-                        >
-                          {getTranslation(storeLanguage, 'orderNowButton')} →
-                        </a>
-                      </div>
-                    </a>
-                  ))}
+                  ✕
+                </button>
               </div>
             </div>
           )}
-
-          {/* All Products */}
-          <div className="py-12">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">All Products</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {store.products.map(({ id, product }) => (
-                <a 
-                  key={id} 
-                  href={`/s/${store.slug}/p/${product.id}${affiliateId ? `?aff=${affiliateId}` : ''}`}
-                  className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow duration-200"
-                >
-                  <div className="h-48 rounded-t-lg overflow-hidden">
+          {/* Store Header */}
+          <div className="bg-white shadow">
+            <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+              {store.banner && (
+                <div className="h-48 w-full rounded-lg overflow-hidden mb-8">
+                  <img 
+                    src={store.banner} 
+                    alt={store.name} 
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
+              
+              {store.logo ? (
+                <div className="flex flex-col items-center w-full">
+                  <a href={`/s/${store.slug}${affiliateId ? `?aff=${affiliateId}` : ''}`}>
                     <img 
-                      src={product.imageUrl || product.thumbnailUrl || '/images/placeholder.jpg'} 
-                      alt={product.title}
-                      className="w-full h-full object-cover"
+                      src={store.logo} 
+                      alt={store.name} 
+                      className="h-26 w-auto object-contain"
                     />
-                  </div>
-                  <div className="p-4">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                      {product.title}
-                    </h3>
-                    <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                      {product.shortDescription || product.description}
-                    </p>
-                    <div className="flex justify-between items-center">
-                      <span className="text-xl font-bold text-gray-900">
-                        {formatPrice(calculateTotalPrice(product.basePrice, product.commissionRate))}
-                      </span>
-                      {product.hasCustomCommission && (
-                        <span className="ml-2 bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
-                          Custom
-                        </span>
-                      )}
-                    </div>
-                  </div>
+                  </a>
+                </div>
+              ) : (
+                <div className="w-full text-center">
+                  <a href={`/s/${store.slug}${affiliateId ? `?aff=${affiliateId}` : ''}`} className="text-gray-900 hover:text-indigo-600">
+                    <h1 className="text-4xl font-bold text-gray-900">{store.name}</h1>
+                  </a>
+                  {store.description && (
+                    <p className="mt-2 text-gray-600 max-w-2xl mx-auto">{store.description}</p>
+                  )}
+                </div>
+              )}
+              
+              {/* Navigation Menu */}
+              <div className="mt-8 border-t border-b border-gray-200 py-4">
+                <nav className="flex justify-center space-x-12">
+                  <a 
+                    href={`/s/${store.slug}${affiliateId ? `?aff=${affiliateId}` : ''}`} 
+                    className="text-indigo-600 font-medium hover:text-indigo-800 transition-colors"
+                  >
+                    {getTranslation(storeLanguage, 'home')}
+                  </a>
+                  <a 
+                    href={`/s/${store.slug}/catalogue${affiliateId ? `?aff=${affiliateId}` : ''}`} 
+                    className="text-gray-600 font-medium hover:text-indigo-600 transition-colors"
+                  >
+                    {getTranslation(storeLanguage, 'catalogue')}
+                  </a>
+                  <a 
+                    href={`/s/${store.slug}/about${affiliateId ? `?aff=${affiliateId}` : ''}`} 
+                    className="text-gray-600 font-medium hover:text-indigo-600 transition-colors"
+                  >
+                    {getTranslation(storeLanguage, 'about')}
+                  </a>
+                  <a 
+                    href={`/s/${store.slug}/policy${affiliateId ? `?aff=${affiliateId}` : ''}`} 
+                    className="text-gray-600 font-medium hover:text-indigo-600 transition-colors"
+                  >
+                    {getTranslation(storeLanguage, 'policy')}
+                  </a>
+                  <a 
+                    href={`/s/${store.slug}/shipping${affiliateId ? `?aff=${affiliateId}` : ''}`} 
+                    className="text-gray-600 font-medium hover:text-indigo-600 transition-colors"
+                  >
+                    {getTranslation(storeLanguage, 'shipping')}
+                  </a>
+                  <a 
+                    href={`/s/${store.slug}/contact${affiliateId ? `?aff=${affiliateId}` : ''}`} 
+                    className="text-gray-600 font-medium hover:text-indigo-600 transition-colors"
+                  >
+                    {getTranslation(storeLanguage, 'contact')}
+                  </a>
+                </nav>
+              </div>
+            </div>
+          </div>
 
-                  {/* Add Order Now button */}
-                  <div className="px-4 pb-4 mt-2">
-                    <a 
-                      href={`/s/${store.slug}/p/${product.id}${affiliateId ? `?aff=${affiliateId}` : ''}`}
-                      className="block w-full bg-indigo-600 text-white text-center py-3 rounded-lg font-medium hover:bg-indigo-700 transition-colors shadow-sm hover:shadow"
-                    >
-                      {getTranslation(storeLanguage, 'orderNowButton')} →
-                    </a>
-                  </div>
-                </a>
-              ))}
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            {/* Featured Products */}
+            {store.products.some(p => p.featured) && (
+              <div className="py-12">
+                <h2 className="text-2xl font-bold text-gray-900 mb-6">Featured Products</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {store.products
+                    .filter(p => p.featured)
+                    .map(({ id, product }) => (
+                      <a 
+                        key={id} 
+                        href={`/s/${store.slug}/p/${product.id}${affiliateId ? `?aff=${affiliateId}` : ''}`}
+                        className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow duration-200"
+                      >
+                        <div className="h-48 rounded-t-lg overflow-hidden">
+                          <img 
+                            src={product.imageUrl || product.thumbnailUrl || '/images/placeholder.jpg'} 
+                            alt={product.title}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="p-4">
+                          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                            {product.title}
+                          </h3>
+                          <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                            {product.shortDescription || product.description}
+                          </p>
+                          <div className="flex justify-between items-center">
+                            <span className="text-xl font-bold text-gray-900">
+                              {formatPrice(calculateTotalPrice(product.basePrice, product.commissionRate))}
+                            </span>
+                            {product.hasCustomCommission && (
+                              <span className="ml-2 bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
+                                Custom
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Add Order Now button */}
+                        <div className="px-4 pb-4 mt-2">
+                          <a 
+                            href={`/s/${store.slug}/p/${product.id}${affiliateId ? `?aff=${affiliateId}` : ''}`}
+                            className="block w-full bg-indigo-600 text-white text-center py-3 rounded-lg font-medium hover:bg-indigo-700 transition-colors shadow-sm hover:shadow"
+                          >
+                            {getTranslation(storeLanguage, 'orderNowButton')} →
+                          </a>
+                        </div>
+                      </a>
+                    ))}
+                </div>
+              </div>
+            )}
+
+            {/* All Products */}
+            <div className="py-12">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">All Products</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {store.products.map(({ id, product }) => (
+                  <a 
+                    key={id} 
+                    href={`/s/${store.slug}/p/${product.id}${affiliateId ? `?aff=${affiliateId}` : ''}`}
+                    className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow duration-200"
+                  >
+                    <div className="h-48 rounded-t-lg overflow-hidden">
+                      <img 
+                        src={product.imageUrl || product.thumbnailUrl || '/images/placeholder.jpg'} 
+                        alt={product.title}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="p-4">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                        {product.title}
+                      </h3>
+                      <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                        {product.shortDescription || product.description}
+                      </p>
+                      <div className="flex justify-between items-center">
+                        <span className="text-xl font-bold text-gray-900">
+                          {formatPrice(calculateTotalPrice(product.basePrice, product.commissionRate))}
+                        </span>
+                        {product.hasCustomCommission && (
+                          <span className="ml-2 bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
+                            Custom
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Add Order Now button */}
+                    <div className="px-4 pb-4 mt-2">
+                      <a 
+                        href={`/s/${store.slug}/p/${product.id}${affiliateId ? `?aff=${affiliateId}` : ''}`}
+                        className="block w-full bg-indigo-600 text-white text-center py-3 rounded-lg font-medium hover:bg-indigo-700 transition-colors shadow-sm hover:shadow"
+                      >
+                        {getTranslation(storeLanguage, 'orderNowButton')} →
+                      </a>
+                    </div>
+                  </a>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="bg-white py-8 mt-12">
+            <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-gray-500 text-sm">
+              Powered by Mercacio
             </div>
           </div>
         </div>
-
-        {/* Footer */}
-        <div className="bg-white py-8 mt-12">
-          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-gray-500 text-sm">
-            Powered by Mercacio
-          </div>
-        </div>
-      </div>
-    </Layout>
+      </Layout>
+    </ThemeProvider>
   );
 };
 
