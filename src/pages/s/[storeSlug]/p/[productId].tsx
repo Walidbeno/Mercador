@@ -40,7 +40,7 @@ const ProductPage: NextPage<Props> = ({ store, product }) => {
     <div className="min-h-screen bg-gray-50">
       {/* Navigation */}
       <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <nav className="flex items-center space-x-2 text-sm">
             <a href={`/s/${store.slug}`} className="text-gray-600 hover:text-gray-900">
               {store.name}
@@ -52,11 +52,11 @@ const ProductPage: NextPage<Props> = ({ store, product }) => {
       </div>
 
       {/* Product Details */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Images */}
           <div className="space-y-4">
-            <div className="aspect-w-1 aspect-h-1 rounded-lg overflow-hidden">
+            <div className="aspect-w-1 aspect-h-1 rounded-lg overflow-hidden bg-gray-200">
               <img 
                 src={product.imageUrl || product.thumbnailUrl || '/images/placeholder.jpg'} 
                 alt={product.title}
@@ -66,7 +66,7 @@ const ProductPage: NextPage<Props> = ({ store, product }) => {
             {product.galleryUrls && product.galleryUrls.length > 0 && (
               <div className="grid grid-cols-4 gap-4">
                 {product.galleryUrls.map((url, index) => (
-                  <div key={index} className="aspect-w-1 aspect-h-1 rounded-lg overflow-hidden">
+                  <div key={index} className="aspect-w-1 aspect-h-1 rounded-lg overflow-hidden bg-gray-200">
                     <img 
                       src={url} 
                       alt={`${product.title} - Image ${index + 1}`}
@@ -105,6 +105,13 @@ const ProductPage: NextPage<Props> = ({ store, product }) => {
               {product.description}
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="bg-white py-8 mt-12">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-gray-500 text-sm">
+          Powered by Mercacio
         </div>
       </div>
     </div>

@@ -46,7 +46,7 @@ const StorePage: NextPage<Props> = ({ store }) => {
     <div className="min-h-screen bg-gray-50">
       {/* Store Header */}
       <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {store.banner && (
             <div className="h-48 w-full rounded-lg overflow-hidden mb-6">
               <img 
@@ -61,7 +61,7 @@ const StorePage: NextPage<Props> = ({ store }) => {
               <img 
                 src={store.logo} 
                 alt={store.name} 
-                className="h-16 w-16 rounded-full"
+                className="h-16 w-16 rounded-full object-cover border border-gray-200"
               />
             )}
             <div>
@@ -74,77 +74,86 @@ const StorePage: NextPage<Props> = ({ store }) => {
         </div>
       </div>
 
-      {/* Featured Products */}
-      {store.products.some(p => p.featured) && (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Featured Products</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {store.products
-              .filter(p => p.featured)
-              .map(({ id, product }) => (
-                <a 
-                  key={id} 
-                  href={`/s/${store.id}/p/${product.id}`}
-                  className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow duration-200"
-                >
-                  <div className="h-48 rounded-t-lg overflow-hidden">
-                    <img 
-                      src={product.imageUrl || product.thumbnailUrl || '/images/placeholder.jpg'} 
-                      alt={product.title}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div className="p-4">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                      {product.title}
-                    </h3>
-                    <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                      {product.shortDescription || product.description}
-                    </p>
-                    <div className="flex justify-between items-center">
-                      <span className="text-xl font-bold text-gray-900">
-                        {formatPrice(product.basePrice)}
-                      </span>
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Featured Products */}
+        {store.products.some(p => p.featured) && (
+          <div className="py-12">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Featured Products</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {store.products
+                .filter(p => p.featured)
+                .map(({ id, product }) => (
+                  <a 
+                    key={id} 
+                    href={`/s/${store.id}/p/${product.id}`}
+                    className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow duration-200"
+                  >
+                    <div className="h-48 rounded-t-lg overflow-hidden">
+                      <img 
+                        src={product.imageUrl || product.thumbnailUrl || '/images/placeholder.jpg'} 
+                        alt={product.title}
+                        className="w-full h-full object-cover"
+                      />
                     </div>
+                    <div className="p-4">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                        {product.title}
+                      </h3>
+                      <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                        {product.shortDescription || product.description}
+                      </p>
+                      <div className="flex justify-between items-center">
+                        <span className="text-xl font-bold text-gray-900">
+                          {formatPrice(product.basePrice)}
+                        </span>
+                      </div>
+                    </div>
+                  </a>
+                ))}
+            </div>
+          </div>
+        )}
+
+        {/* All Products */}
+        <div className="py-12">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">All Products</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {store.products.map(({ id, product }) => (
+              <a 
+                key={id} 
+                href={`/s/${store.id}/p/${product.id}`}
+                className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow duration-200"
+              >
+                <div className="h-48 rounded-t-lg overflow-hidden">
+                  <img 
+                    src={product.imageUrl || product.thumbnailUrl || '/images/placeholder.jpg'} 
+                    alt={product.title}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="p-4">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    {product.title}
+                  </h3>
+                  <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                    {product.shortDescription || product.description}
+                  </p>
+                  <div className="flex justify-between items-center">
+                    <span className="text-xl font-bold text-gray-900">
+                      {formatPrice(product.basePrice)}
+                    </span>
                   </div>
-                </a>
-              ))}
+                </div>
+              </a>
+            ))}
           </div>
         </div>
-      )}
+      </div>
 
-      {/* All Products */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">All Products</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {store.products.map(({ id, product }) => (
-            <a 
-              key={id} 
-              href={`/s/${store.id}/p/${product.id}`}
-              className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow duration-200"
-            >
-              <div className="h-48 rounded-t-lg overflow-hidden">
-                <img 
-                  src={product.imageUrl || product.thumbnailUrl || '/images/placeholder.jpg'} 
-                  alt={product.title}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="p-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  {product.title}
-                </h3>
-                <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                  {product.shortDescription || product.description}
-                </p>
-                <div className="flex justify-between items-center">
-                  <span className="text-xl font-bold text-gray-900">
-                    {formatPrice(product.basePrice)}
-                  </span>
-                </div>
-              </div>
-            </a>
-          ))}
+      {/* Footer */}
+      <div className="bg-white py-8 mt-12">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-gray-500 text-sm">
+          Powered by Mercacio
         </div>
       </div>
     </div>
