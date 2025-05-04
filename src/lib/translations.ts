@@ -33,6 +33,7 @@ export const navTranslations: NavTranslations = {
     termsTitle: 'Terms & Conditions',
     // Product page
     buyNowButton: 'Buy Now',
+    orderNowButton: 'Order Now',
     basePrice: 'Base Price',
     commission: 'Commission',
     totalPrice: 'Total Price'
@@ -61,6 +62,7 @@ export const navTranslations: NavTranslations = {
     termsTitle: 'Términos y Condiciones',
     // Product page
     buyNowButton: 'Comprar Ahora',
+    orderNowButton: 'Ordenar Ahora',
     basePrice: 'Precio Base',
     commission: 'Comisión',
     totalPrice: 'Precio Total'
@@ -89,6 +91,7 @@ export const navTranslations: NavTranslations = {
     termsTitle: 'Termes et Conditions',
     // Product page
     buyNowButton: 'Acheter Maintenant',
+    orderNowButton: 'Commander Maintenant',
     basePrice: 'Prix de Base',
     commission: 'Commission',
     totalPrice: 'Prix Total'
@@ -117,6 +120,7 @@ export const navTranslations: NavTranslations = {
     termsTitle: 'Termos e Condições',
     // Product page
     buyNowButton: 'Comprar Agora',
+    orderNowButton: 'Pedir Agora',
     basePrice: 'Preço Base',
     commission: 'Comissão',
     totalPrice: 'Preço Total'
@@ -145,6 +149,7 @@ export const navTranslations: NavTranslations = {
     termsTitle: 'Geschäftsbedingungen',
     // Product page
     buyNowButton: 'Jetzt Kaufen',
+    orderNowButton: 'Jetzt Bestellen',
     basePrice: 'Grundpreis',
     commission: 'Provision',
     totalPrice: 'Gesamtpreis'
@@ -173,6 +178,7 @@ export const navTranslations: NavTranslations = {
     termsTitle: 'Termini e Condizioni',
     // Product page
     buyNowButton: 'Acquista Ora',
+    orderNowButton: 'Ordina Ora',
     basePrice: 'Prezzo Base',
     commission: 'Commissione',
     totalPrice: 'Prezzo Totale'

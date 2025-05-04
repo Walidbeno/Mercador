@@ -165,7 +165,7 @@ const StorePage: NextPage<Props> = ({ store, affiliateId }) => {
                           href={`/s/${store.id}/p/${product.id}`}
                           className="block w-full bg-indigo-600 text-white text-center py-3 rounded-lg font-medium hover:bg-indigo-700 transition-colors shadow-sm hover:shadow"
                         >
-                          Order Now →
+                          {getTranslation(storeLanguage, 'orderNowButton')} →
                         </a>
                       </div>
                     </a>
@@ -211,7 +211,7 @@ const StorePage: NextPage<Props> = ({ store, affiliateId }) => {
                       href={`/s/${store.id}/p/${product.id}`}
                       className="block w-full bg-indigo-600 text-white text-center py-3 rounded-lg font-medium hover:bg-indigo-700 transition-colors shadow-sm hover:shadow"
                     >
-                      Order Now →
+                      {getTranslation(storeLanguage, 'orderNowButton')} →
                     </a>
                   </div>
                 </a>
