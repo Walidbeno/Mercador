@@ -135,15 +135,19 @@ const StorePage: NextPage<Props> = ({ store, affiliateId }) => {
             
             {store.logo ? (
               <div className="flex flex-col items-center w-full">
-                <img 
-                  src={store.logo} 
-                  alt={store.name} 
-                  className="h-26 w-auto object-contain"
-                />
+                <a href={`/s/${store.slug}${affiliateId ? `?aff=${affiliateId}` : ''}`}>
+                  <img 
+                    src={store.logo} 
+                    alt={store.name} 
+                    className="h-26 w-auto object-contain"
+                  />
+                </a>
               </div>
             ) : (
               <div className="w-full text-center">
-                <h1 className="text-4xl font-bold text-gray-900">{store.name}</h1>
+                <a href={`/s/${store.slug}${affiliateId ? `?aff=${affiliateId}` : ''}`} className="text-gray-900 hover:text-indigo-600">
+                  <h1 className="text-4xl font-bold text-gray-900">{store.name}</h1>
+                </a>
                 {store.description && (
                   <p className="mt-2 text-gray-600 max-w-2xl mx-auto">{store.description}</p>
                 )}
@@ -154,37 +158,37 @@ const StorePage: NextPage<Props> = ({ store, affiliateId }) => {
             <div className="mt-8 border-t border-b border-gray-200 py-4">
               <nav className="flex justify-center space-x-12">
                 <a 
-                  href={`/s/${store.slug}`} 
+                  href={`/s/${store.slug}${affiliateId ? `?aff=${affiliateId}` : ''}`} 
                   className="text-indigo-600 font-medium hover:text-indigo-800 transition-colors"
                 >
                   {getTranslation(storeLanguage, 'home')}
                 </a>
                 <a 
-                  href={`/s/${store.slug}/catalogue`} 
+                  href={`/s/${store.slug}/catalogue${affiliateId ? `?aff=${affiliateId}` : ''}`} 
                   className="text-gray-600 font-medium hover:text-indigo-600 transition-colors"
                 >
                   {getTranslation(storeLanguage, 'catalogue')}
                 </a>
                 <a 
-                  href={`/s/${store.slug}/about`} 
+                  href={`/s/${store.slug}/about${affiliateId ? `?aff=${affiliateId}` : ''}`} 
                   className="text-gray-600 font-medium hover:text-indigo-600 transition-colors"
                 >
                   {getTranslation(storeLanguage, 'about')}
                 </a>
                 <a 
-                  href={`/s/${store.slug}/policy`} 
+                  href={`/s/${store.slug}/policy${affiliateId ? `?aff=${affiliateId}` : ''}`} 
                   className="text-gray-600 font-medium hover:text-indigo-600 transition-colors"
                 >
                   {getTranslation(storeLanguage, 'policy')}
                 </a>
                 <a 
-                  href={`/s/${store.slug}/shipping`} 
+                  href={`/s/${store.slug}/shipping${affiliateId ? `?aff=${affiliateId}` : ''}`} 
                   className="text-gray-600 font-medium hover:text-indigo-600 transition-colors"
                 >
                   {getTranslation(storeLanguage, 'shipping')}
                 </a>
                 <a 
-                  href={`/s/${store.slug}/contact`} 
+                  href={`/s/${store.slug}/contact${affiliateId ? `?aff=${affiliateId}` : ''}`} 
                   className="text-gray-600 font-medium hover:text-indigo-600 transition-colors"
                 >
                   {getTranslation(storeLanguage, 'contact')}
@@ -320,35 +324,7 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
     console.log('Raw aff parameter:', query.aff);
     console.log('Type of aff parameter:', typeof query.aff);
     
-    // Make sure we're getting the affiliate ID correctly
-    let affiliateId = '';
-    if (query.aff) {
-      if (typeof query.aff === 'string') {
-        affiliateId = query.aff;
-      } else if (Array.isArray(query.aff) && query.aff.length > 0) {
-        affiliateId = query.aff[0];
-      }
-    }
-    
-    console.log(`Final parsed affiliateId: '${affiliateId}'`);
-
-    console.log(`==== STORE PAGE DEBUG ====`);
-    console.log(`URL params: storeSlug=${storeSlug}`);
-    console.log(`Using affiliateId: '${affiliateId}'`);
-
-    // Get all unique affiliate IDs in the system for debugging
-    try {
-      const allAffiliates = await prisma.affiliateProductCommission.findMany({
-        select: {
-          affiliateId: true
-        },
-        distinct: ['affiliateId']
-      });
-      console.log(`Available affiliate IDs in database:`, allAffiliates.map(a => a.affiliateId));
-    } catch (e) {
-      console.error('Error fetching affiliate IDs:', e);
-    }
-
+    // Get the store first so we can access owner information
     const store = await prisma.store.findUnique({
       where: { slug: storeSlug },
       include: {
@@ -378,6 +354,39 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
         notFound: true
       };
     }
+
+    // Get the specified affiliate ID from query or use store owner ID
+    let affiliateId = '';
+    if (query.aff) {
+      if (typeof query.aff === 'string') {
+        affiliateId = query.aff;
+      } else if (Array.isArray(query.aff) && query.aff.length > 0) {
+        affiliateId = query.aff[0];
+      }
+    }
+
+    // If no affiliate ID is specified in the URL, use an affiliate ID from the database
+    if (!affiliateId) {
+      try {
+        // Get all available affiliate IDs
+        const allAffiliates = await prisma.affiliateProductCommission.findMany({
+          select: {
+            affiliateId: true
+          },
+          distinct: ['affiliateId']
+        });
+        
+        if (allAffiliates.length > 0) {
+          // Use the first available affiliate ID
+          affiliateId = allAffiliates[0].affiliateId;
+          console.log(`No affiliateId in URL, using database affiliate: ${affiliateId}`);
+        }
+      } catch (e) {
+        console.error('Error fetching affiliate IDs:', e);
+      }
+    }
+    
+    console.log(`Final affiliate ID being used: ${affiliateId}`);
 
     // Get product IDs to check for custom commissions
     const productIds = store.products.map(sp => sp.product.id);

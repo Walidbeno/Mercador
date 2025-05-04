@@ -83,6 +83,15 @@ const ProductPage: NextPage<Props> = ({ store, product, affiliateId, hasCustomCo
                 >
                   Apply
                 </button>
+                {/* Quick button to use 0b7f3250-8512-41ee-aa44-a389c34b5bc8 */}
+                <button
+                  onClick={() => {
+                    window.location.href = `${window.location.pathname}?aff=0b7f3250-8512-41ee-aa44-a389c34b5bc8`;
+                  }}
+                  className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600"
+                >
+                  Use Available Affiliate ID
+                </button>
               </div>
               <button
                 onClick={() => setShowTestBanner(false)}
@@ -97,7 +106,7 @@ const ProductPage: NextPage<Props> = ({ store, product, affiliateId, hasCustomCo
         <div className="bg-white shadow">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <nav className="flex items-center space-x-2 text-sm">
-              <a href={`/s/${store.slug}`} className="flex items-center text-gray-600 hover:text-gray-900">
+              <a href={`/s/${store.slug}${affiliateId ? `?aff=${affiliateId}` : ''}`} className="flex items-center text-gray-600 hover:text-gray-900">
                 {store.logo ? (
                   <img 
                     src={store.logo} 
@@ -116,37 +125,37 @@ const ProductPage: NextPage<Props> = ({ store, product, affiliateId, hasCustomCo
             <div className="mt-4 border-t border-b border-gray-200 py-3">
               <nav className="flex justify-center space-x-12">
                 <a 
-                  href={`/s/${store.slug}`} 
+                  href={`/s/${store.slug}${affiliateId ? `?aff=${affiliateId}` : ''}`} 
                   className="text-gray-600 font-medium hover:text-indigo-600 transition-colors"
                 >
                   {getTranslation(storeLanguage, 'home')}
                 </a>
                 <a 
-                  href={`/s/${store.slug}/catalogue`} 
+                  href={`/s/${store.slug}/catalogue${affiliateId ? `?aff=${affiliateId}` : ''}`} 
                   className="text-gray-600 font-medium hover:text-indigo-600 transition-colors"
                 >
                   {getTranslation(storeLanguage, 'catalogue')}
                 </a>
                 <a 
-                  href={`/s/${store.slug}/about`} 
+                  href={`/s/${store.slug}/about${affiliateId ? `?aff=${affiliateId}` : ''}`} 
                   className="text-gray-600 font-medium hover:text-indigo-600 transition-colors"
                 >
                   {getTranslation(storeLanguage, 'about')}
                 </a>
                 <a 
-                  href={`/s/${store.slug}/policy`} 
+                  href={`/s/${store.slug}/policy${affiliateId ? `?aff=${affiliateId}` : ''}`} 
                   className="text-gray-600 font-medium hover:text-indigo-600 transition-colors"
                 >
                   {getTranslation(storeLanguage, 'policy')}
                 </a>
                 <a 
-                  href={`/s/${store.slug}/shipping`} 
+                  href={`/s/${store.slug}/shipping${affiliateId ? `?aff=${affiliateId}` : ''}`} 
                   className="text-gray-600 font-medium hover:text-indigo-600 transition-colors"
                 >
                   {getTranslation(storeLanguage, 'shipping')}
                 </a>
                 <a 
-                  href={`/s/${store.slug}/contact`} 
+                  href={`/s/${store.slug}/contact${affiliateId ? `?aff=${affiliateId}` : ''}`} 
                   className="text-gray-600 font-medium hover:text-indigo-600 transition-colors"
                 >
                   {getTranslation(storeLanguage, 'contact')}
@@ -263,8 +272,29 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
         affiliateId = query.aff[0];
       }
     }
+
+    // Check if we need to retrieve a default affiliate ID
+    if (!affiliateId) {
+      try {
+        // Get all available affiliate IDs
+        const allAffiliates = await prisma.affiliateProductCommission.findMany({
+          select: {
+            affiliateId: true
+          },
+          distinct: ['affiliateId']
+        });
+        
+        if (allAffiliates.length > 0) {
+          // Use the first available affiliate ID
+          affiliateId = allAffiliates[0].affiliateId;
+          console.log(`No affiliateId in URL, using database affiliate: ${affiliateId}`);
+        }
+      } catch (e) {
+        console.error('Error fetching affiliate IDs:', e);
+      }
+    }
     
-    console.log(`Final parsed affiliateId: '${affiliateId}'`);
+    console.log(`Final affiliate ID being used: ${affiliateId}`);
 
     console.log(`==== PRODUCT PAGE DEBUG ====`);
     console.log(`URL params: storeSlug=${storeSlug}, productId=${productId}`);
