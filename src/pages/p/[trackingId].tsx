@@ -28,7 +28,8 @@ export default function LandingPage({ landingPage }: Props) {
   const templateData = {
     ...landingPage.product,
     basePrice: Number(landingPage.product.basePrice),
-    commissionRate: Number(landingPage.product.commissionRate)
+    commissionRate: Number(landingPage.product.commissionRate),
+    settings: landingPage.settings || {}
   };
 
   const templateHtml = renderTemplate(landingPage.template, templateData);

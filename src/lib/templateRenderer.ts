@@ -9,6 +9,7 @@ type Product = {
   basePrice: number;
   commissionRate: number; // Fixed commission amount in euros
   galleryUrls?: string[];
+  settings?: any;
 };
 
 export function renderTemplate(template: TemplateType, product: Product): string {
@@ -16,7 +17,13 @@ export function renderTemplate(template: TemplateType, product: Product): string
   const processedProduct = {
     ...product,
     commissionRate: Number(product.commissionRate),
-    basePrice: Number(product.basePrice)
+    basePrice: Number(product.basePrice),
+    settings: product.settings || {
+      // Default settings to ensure proper rendering
+      showCommission: true,
+      showDescription: true,
+      showGallery: true
+    }
   };
 
   switch (template) {

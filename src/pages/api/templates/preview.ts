@@ -46,6 +46,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
     }
 
+    // Get any custom settings from query params
+    const settings = {
+      showCommission: req.query.showCommission !== 'false',
+      showDescription: req.query.showDescription !== 'false',
+      showGallery: req.query.showGallery !== 'false'
+    };
+
     // Map product data to template format
     const templateData = {
       title: product.title,
@@ -55,7 +62,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       thumbnailUrl: product.thumbnailUrl || '',
       basePrice: Number(product.basePrice),
       commissionRate: Number(product.commissionRate),
-      galleryUrls: product.galleryUrls
+      galleryUrls: product.galleryUrls,
+      settings: settings
     };
 
     // Generate HTML
