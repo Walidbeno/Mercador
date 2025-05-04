@@ -64,12 +64,8 @@ const StorePage: NextPage<Props> = ({ store }) => {
                 <img 
                   src={store.logo} 
                   alt={store.name} 
-                  className="h-32 w-32 rounded-full object-cover border-2 border-gray-200 shadow-md"
+                  className="h-48 w-auto object-contain"
                 />
-                <h2 className="mt-4 text-2xl font-bold text-gray-900">{store.name}</h2>
-                {store.description && (
-                  <p className="mt-2 text-gray-600 text-center max-w-2xl">{store.description}</p>
-                )}
               </div>
             ) : (
               <div className="w-full text-center">

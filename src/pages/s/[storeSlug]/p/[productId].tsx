@@ -46,14 +46,15 @@ const ProductPage: NextPage<Props> = ({ store, product }) => {
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <nav className="flex items-center space-x-2 text-sm">
               <a href={`/s/${store.slug}`} className="flex items-center text-gray-600 hover:text-gray-900">
-                {store.logo && (
+                {store.logo ? (
                   <img 
                     src={store.logo} 
                     alt={store.name} 
-                    className="h-8 w-8 rounded-full object-cover mr-2 border border-gray-200"
+                    className="h-8 w-auto object-contain"
                   />
+                ) : (
+                  <span>{store.name}</span>
                 )}
-                <span>{store.name}</span>
               </a>
               <span className="text-gray-400">/</span>
               <span className="text-gray-900">{product.title}</span>
