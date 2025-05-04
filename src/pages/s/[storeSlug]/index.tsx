@@ -2,6 +2,7 @@ import { GetServerSideProps, NextPage } from 'next';
 import prisma from '@/lib/prisma';
 import Layout from '@/components/Layout';
 import { getTranslation } from '@/lib/translations';
+import { useEffect } from 'react';
 
 interface StoreProduct {
   id: string;
@@ -42,6 +43,20 @@ interface Props {
 const StorePage: NextPage<Props> = ({ store, affiliateId }) => {
   // Get store language from settings or default to English
   const storeLanguage = store.settings?.language || 'en';
+
+  // Log affiliate ID information to the client console for debugging
+  useEffect(() => {
+    console.log('Home Page loaded with affiliate ID:', affiliateId);
+    // Add affiliate ID to all product links dynamically
+    if (affiliateId) {
+      document.querySelectorAll('a[href^="/s/"]').forEach(link => {
+        const href = link.getAttribute('href');
+        if (href && !href.includes('?aff=')) {
+          link.setAttribute('href', `${href}${href.includes('?') ? '&' : '?'}aff=${affiliateId}`);
+        }
+      });
+    }
+  }, [affiliateId]);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat(store.settings?.language || 'en', {
@@ -251,9 +266,40 @@ const StorePage: NextPage<Props> = ({ store, affiliateId }) => {
 export const getServerSideProps: GetServerSideProps = async ({ params, query }) => {
   try {
     const storeSlug = params?.storeSlug as string;
-    const affiliateId = query.aff as string || ''; // Get affiliate ID from query if present
+    
+    // Add more detailed debugging for the affiliate ID
+    console.log('Raw query parameter:', query);
+    console.log('Raw aff parameter:', query.aff);
+    console.log('Type of aff parameter:', typeof query.aff);
+    
+    // Make sure we're getting the affiliate ID correctly
+    let affiliateId = '';
+    if (query.aff) {
+      if (typeof query.aff === 'string') {
+        affiliateId = query.aff;
+      } else if (Array.isArray(query.aff) && query.aff.length > 0) {
+        affiliateId = query.aff[0];
+      }
+    }
+    
+    console.log(`Final parsed affiliateId: '${affiliateId}'`);
 
-    console.log(`Store page request: storeSlug=${storeSlug}, affiliateId=${affiliateId || 'none'}`);
+    console.log(`==== STORE PAGE DEBUG ====`);
+    console.log(`URL params: storeSlug=${storeSlug}`);
+    console.log(`Using affiliateId: '${affiliateId}'`);
+
+    // Get all unique affiliate IDs in the system for debugging
+    try {
+      const allAffiliates = await prisma.affiliateProductCommission.findMany({
+        select: {
+          affiliateId: true
+        },
+        distinct: ['affiliateId']
+      });
+      console.log(`Available affiliate IDs in database:`, allAffiliates.map(a => a.affiliateId));
+    } catch (e) {
+      console.error('Error fetching affiliate IDs:', e);
+    }
 
     const store = await prisma.store.findUnique({
       where: { slug: storeSlug },
@@ -287,12 +333,32 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
 
     // Get product IDs to check for custom commissions
     const productIds = store.products.map(sp => sp.product.id);
+    console.log(`Found ${productIds.length} products in store`);
     
     // Fetch custom commissions if an affiliate ID is provided
     let customCommissions: Record<string, number> = {};
     if (affiliateId && productIds.length > 0) {
       console.log(`Looking for custom commissions for ${productIds.length} products and affiliate ${affiliateId}`);
       
+      // First, check for all commissions regardless of affiliate
+      const allCommissions = await prisma.affiliateProductCommission.findMany({
+        where: {
+          productId: { in: productIds },
+          isActive: true
+        },
+        select: {
+          productId: true,
+          affiliateId: true,
+          commission: true
+        }
+      });
+      
+      console.log(`Found ${allCommissions.length} total commissions for these products (all affiliates):`);
+      allCommissions.forEach(comm => {
+        console.log(`  Product ${comm.productId}: ${comm.commission} (Affiliate: ${comm.affiliateId})`);
+      });
+      
+      // Now get commissions specific to our affiliate
       const affiliateCommissions = await prisma.affiliateProductCommission.findMany({
         where: {
           affiliateId: affiliateId,
@@ -345,6 +411,8 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
         };
       })
     };
+
+    console.log(`==== END STORE PAGE DEBUG ====`);
 
     return {
       props: {

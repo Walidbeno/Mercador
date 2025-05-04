@@ -208,9 +208,27 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
   try {
     const storeSlug = params?.storeSlug as string;
     const productId = params?.productId as string;
-    const affiliateId = query.aff as string || ''; // Get affiliate ID from query if available
+    
+    // Add more detailed debugging for the affiliate ID
+    console.log('Raw query parameter:', query);
+    console.log('Raw aff parameter:', query.aff);
+    console.log('Type of aff parameter:', typeof query.aff);
+    
+    // Make sure we're getting the affiliate ID correctly
+    let affiliateId = '';
+    if (query.aff) {
+      if (typeof query.aff === 'string') {
+        affiliateId = query.aff;
+      } else if (Array.isArray(query.aff) && query.aff.length > 0) {
+        affiliateId = query.aff[0];
+      }
+    }
+    
+    console.log(`Final parsed affiliateId: '${affiliateId}'`);
 
-    console.log(`Product page request: storeSlug=${storeSlug}, productId=${productId}, affiliateId=${affiliateId || 'none'}`);
+    console.log(`==== PRODUCT PAGE DEBUG ====`);
+    console.log(`URL params: storeSlug=${storeSlug}, productId=${productId}`);
+    console.log(`Using affiliateId: '${affiliateId}'`);
 
     const storeProduct = await prisma.storeProduct.findFirst({
       where: {
@@ -251,6 +269,9 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
       };
     }
 
+    console.log(`Found product: ${storeProduct.product.title}`);
+    console.log(`Default commission rate: ${storeProduct.product.commissionRate}`);
+    
     // Get the default commission rate
     const defaultCommissionRate = storeProduct.product.commissionRate;
     
@@ -273,13 +294,29 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
         }
       });
 
+      console.log(`Raw database result:`, customCommission);
+
       // If there's a custom commission, use it
       if (customCommission) {
         commissionRate = customCommission.commission;
         hasCustomCommission = true;
         console.log(`Found custom commission: ${commissionRate} (default was: ${defaultCommissionRate})`);
       } else {
-        console.log(`No custom commission found, using default: ${commissionRate}`);
+        // Try a direct database query to see all commissions for this product
+        const allCommissions = await prisma.affiliateProductCommission.findMany({
+          where: {
+            productId: storeProduct.product.id,
+            isActive: true
+          },
+          select: {
+            affiliateId: true,
+            commission: true
+          }
+        });
+        
+        console.log(`All commissions for product ${storeProduct.product.id}:`, allCommissions);
+        
+        console.log(`No matching custom commission found, using default: ${commissionRate}`);
       }
     }
 
@@ -290,7 +327,7 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
       commissionRate: Number(commissionRate)
     };
 
-    console.log(`Returning product with commission: ${serializedProduct.commissionRate} (hasCustomCommission: ${hasCustomCommission})`);
+    console.log(`Final product with commission: ${serializedProduct.commissionRate} (hasCustomCommission: ${hasCustomCommission})`);
 
     return {
       props: {
