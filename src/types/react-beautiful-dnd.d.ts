@@ -58,6 +58,7 @@ declare module 'react-beautiful-dnd' {
     onDragStart?(initial: DragStart): void;
     onDragUpdate?(initial: DragUpdate): void;
     onDragEnd(result: DropResult): void;
+    children: React.ReactNode;
   };
 
   export type DraggableChildrenFn = (

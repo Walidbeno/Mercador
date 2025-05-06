@@ -3,9 +3,9 @@ import { useState, useEffect } from 'react';
 import prisma from '@/lib/prisma';
 import Layout from '@/components/Layout';
 import { useRouter } from 'next/router';
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
-import { ColorPicker } from '@/components/ColorPicker';
-import { ImageUploader } from '@/components/ImageUploader';
+import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
+import { ColorPicker } from '../../../components/ColorPicker';
+import { ImageUploader } from '../../../components/ImageUploader';
 
 // Define the section types available for stores
 const SECTION_TYPES = {
