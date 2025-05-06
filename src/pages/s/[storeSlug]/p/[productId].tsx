@@ -2,7 +2,8 @@ import { GetServerSideProps, NextPage } from 'next';
 import prisma from '@/lib/prisma';
 import Layout from '@/components/Layout';
 import { getTranslation } from '@/lib/translations';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 
 interface Product {
   id: string;
@@ -42,6 +43,9 @@ const ProductPage: NextPage<Props> = ({ store, product, affiliateId, hasCustomCo
   const [testAffiliateId, setTestAffiliateId] = useState('');
   const [showTestBanner, setShowTestBanner] = useState(true);
 
+  const router = useRouter();
+  const [isOwner, setIsOwner] = useState(false);
+
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat(store.settings?.language || 'en', {
       style: 'currency',
@@ -61,6 +65,22 @@ const ProductPage: NextPage<Props> = ({ store, product, affiliateId, hasCustomCo
       window.location.href = `${window.location.pathname}?aff=${testAffiliateId}`;
     }
   };
+
+  useEffect(() => {
+    // Check if current user is owner (in a real app, this would check auth)
+    // For demo purposes, we'll use a query param isOwner=true
+    setIsOwner(router.query.isOwner === 'true');
+    
+    // Add affiliate ID to all product links dynamically
+    if (affiliateId) {
+      document.querySelectorAll('a[href^="/s/"]').forEach(link => {
+        const href = link.getAttribute('href');
+        if (href && !href.includes('?aff=')) {
+          link.setAttribute('href', `${href}${href.includes('?') ? '&' : '?'}aff=${affiliateId}`);
+        }
+      });
+    }
+  }, [affiliateId, router.query.isOwner]);
 
   return (
     <Layout title={`${product.title} | ${store.name}`}>
@@ -93,12 +113,24 @@ const ProductPage: NextPage<Props> = ({ store, product, affiliateId, hasCustomCo
                   Use Available Affiliate ID
                 </button>
               </div>
-              <button
-                onClick={() => setShowTestBanner(false)}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                ✕
-              </button>
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => {
+                    const url = new URL(window.location.href);
+                    url.searchParams.set('isOwner', isOwner ? 'false' : 'true');
+                    window.location.href = url.toString();
+                  }}
+                  className="bg-purple-500 text-white px-3 py-1 rounded hover:bg-purple-600"
+                >
+                  {isOwner ? 'Exit Owner Mode' : 'Enter Owner Mode'}
+                </button>
+                <button
+                  onClick={() => setShowTestBanner(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  ✕
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -106,17 +138,28 @@ const ProductPage: NextPage<Props> = ({ store, product, affiliateId, hasCustomCo
         <div className="bg-white shadow">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <nav className="flex items-center space-x-2 text-sm">
-              <a href={`/s/${store.slug}${affiliateId ? `?aff=${affiliateId}` : ''}`} className="flex items-center text-gray-600 hover:text-gray-900">
-                {store.logo ? (
-                  <img 
-                    src={store.logo} 
-                    alt={store.name} 
-                    className="h-8 w-auto object-contain"
-                  />
-                ) : (
-                  <span>{store.name}</span>
+              <div className="flex items-center justify-between w-full">
+                <a href={`/s/${store.slug}${affiliateId ? `?aff=${affiliateId}` : ''}`} className="flex items-center text-gray-600 hover:text-gray-900">
+                  {store.logo ? (
+                    <img 
+                      src={store.logo} 
+                      alt={store.name} 
+                      className="h-12 w-auto object-contain mr-3"
+                    />
+                  ) : (
+                    <span className="text-xl font-semibold">{store.name}</span>
+                  )}
+                </a>
+                
+                {isOwner && (
+                  <a
+                    href={`/s/${store.slug}/editor${affiliateId ? `?aff=${affiliateId}` : ''}`}
+                    className="px-3 py-1 bg-indigo-600 text-sm text-white rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none"
+                  >
+                    Edit Store
+                  </a>
                 )}
-              </a>
+              </div>
               <span className="text-gray-400">/</span>
               <span className="text-gray-900">{product.title}</span>
             </nav>

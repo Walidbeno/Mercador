@@ -28,6 +28,11 @@ export const modernTemplate = (product: {
       content: string;
       position: 'top' | 'middle' | 'bottom';
     }>;
+    features?: Array<{
+      title: string;
+      description: string;
+      icon?: string;
+    }>;
   }
 }) => {
   const settings = product.settings || {};
@@ -65,6 +70,46 @@ export const modernTemplate = (product: {
                 </div>
                 <p class="text-gray-600 mb-4">"${testimonial.text}"</p>
                 <p class="font-semibold text-gray-900">- ${testimonial.author}</p>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+    `;
+  };
+
+  // Render the features section if features are provided in settings, otherwise use default features
+  const renderFeatures = () => {
+    const defaultFeatures = [
+      {
+        title: "Premium Quality",
+        description: "Experience excellence with our carefully curated product.",
+        icon: "🎯"
+      },
+      {
+        title: "Instant Access",
+        description: "Get immediate access after purchase.",
+        icon: "⚡"
+      },
+      {
+        title: "Secure Purchase",
+        description: "Your transaction is protected and secure.",
+        icon: "🔒"
+      }
+    ];
+    
+    const featuresToRender = settings.features?.length ? settings.features : defaultFeatures;
+    
+    return `
+      <div class="bg-white py-16">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 class="text-3xl font-bold text-gray-900 text-center mb-12">Key Features</h2>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            ${featuresToRender.map(feature => `
+              <div class="text-center p-6 bg-gray-50 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300">
+                <div class="text-4xl mb-4">${feature.icon || '✨'}</div>
+                <h3 class="text-xl font-semibold mb-2">${feature.title}</h3>
+                <p class="text-gray-600">${feature.description}</p>
               </div>
             `).join('')}
           </div>
@@ -131,29 +176,8 @@ export const modernTemplate = (product: {
 
     ${renderCustomSections('top')}
 
-    <!-- Key Features Section -->
-    <div class="bg-white py-16">
-        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 class="text-3xl font-bold text-gray-900 text-center mb-12">Key Features</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div class="text-center p-6">
-                    <div class="text-4xl mb-4">🎯</div>
-                    <h3 class="text-xl font-semibold mb-2">Premium Quality</h3>
-                    <p class="text-gray-600">Experience excellence with our carefully curated product.</p>
-                </div>
-                <div class="text-center p-6">
-                    <div class="text-4xl mb-4">⚡</div>
-                    <h3 class="text-xl font-semibold mb-2">Instant Access</h3>
-                    <p class="text-gray-600">Get immediate access after purchase.</p>
-                </div>
-                <div class="text-center p-6">
-                    <div class="text-4xl mb-4">🔒</div>
-                    <h3 class="text-xl font-semibold mb-2">Secure Purchase</h3>
-                    <p class="text-gray-600">Your transaction is protected and secure.</p>
-                </div>
-            </div>
-        </div>
-    </div>
+    <!-- Features Section -->
+    ${renderFeatures()}
 
     ${showDescription ? `
     <!-- Description Section -->
