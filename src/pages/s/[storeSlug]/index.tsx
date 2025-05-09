@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { ThemeProvider } from '@/context/ThemeContext';
 import Button from '@/components/Button';
 import { useRouter } from 'next/router';
+import { storeStaticCache } from '@/lib/storeStaticCache';
 
 interface StoreProduct {
   id: string;
@@ -358,43 +359,7 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
   try {
     const storeSlug = params?.storeSlug as string;
     
-    // Add more detailed debugging for the affiliate ID
-    console.log('Raw query parameter:', query);
-    console.log('Raw aff parameter:', query.aff);
-    console.log('Type of aff parameter:', typeof query.aff);
-    
-    // Get the store first so we can access owner information
-    const store = await prisma.store.findUnique({
-      where: { slug: storeSlug },
-      include: {
-        products: {
-          where: { isActive: true },
-          include: {
-            product: {
-              select: {
-                id: true,
-                title: true,
-                description: true,
-                shortDescription: true,
-                basePrice: true,
-                commissionRate: true,
-                imageUrl: true,
-                thumbnailUrl: true
-              }
-            }
-          }
-        }
-      }
-    });
-
-    if (!store) {
-      console.log(`Store not found: storeSlug=${storeSlug}`);
-      return {
-        notFound: true
-      };
-    }
-
-    // Get the specified affiliate ID from query or use store owner ID
+    // Extract affiliate ID from query
     let affiliateId = '';
     if (query.aff) {
       if (typeof query.aff === 'string') {
@@ -404,28 +369,68 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
       }
     }
 
-    // If no affiliate ID is specified in the URL, use an affiliate ID from the database
-    if (!affiliateId) {
-      try {
-        // Get all available affiliate IDs
-        const allAffiliates = await prisma.affiliateProductCommission.findMany({
-          select: {
-            affiliateId: true
-          },
-          distinct: ['affiliateId']
-        });
-        
-        if (allAffiliates.length > 0) {
-          // Use the first available affiliate ID
-          affiliateId = allAffiliates[0].affiliateId;
-          console.log(`No affiliateId in URL, using database affiliate: ${affiliateId}`);
+    // Check for preview mode - skip cache when previewing
+    const isPreview = query.preview === 'true';
+    
+    // Try to get store from static cache unless in preview mode
+    let store = null;
+    let cacheHit = false;
+    
+    if (!isPreview) {
+      // First check if we have a slug reference
+      const slugReference = storeStaticCache.get(storeSlug, 'slug');
+      
+      if (slugReference && slugReference._type === 'reference') {
+        // We have a reference, fetch the full store data by ID
+        const cachedStore = storeStaticCache.get(slugReference.id, 'id');
+        if (cachedStore) {
+          console.log(`Static cache hit for store: ${storeSlug} (${slugReference.id})`);
+          store = cachedStore;
+          cacheHit = true;
         }
-      } catch (e) {
-        console.error('Error fetching affiliate IDs:', e);
       }
     }
-    
-    console.log(`Final affiliate ID being used: ${affiliateId}`);
+
+    // If cache missed or in preview mode, fetch from database
+    if (!store) {
+      console.log(`Static cache miss for store: ${storeSlug}, fetching from database`);
+      
+      store = await prisma.store.findUnique({
+        where: { slug: storeSlug },
+        include: {
+          products: {
+            where: { isActive: true },
+            include: {
+              product: {
+                select: {
+                  id: true,
+                  title: true,
+                  description: true,
+                  shortDescription: true,
+                  basePrice: true,
+                  commissionRate: true,
+                  imageUrl: true,
+                  thumbnailUrl: true
+                }
+              }
+            }
+          }
+        }
+      });
+
+      if (!store) {
+        console.log(`Store not found: storeSlug=${storeSlug}`);
+        return {
+          notFound: true
+        };
+      }
+      
+      // Save to static cache for future requests (unless in preview mode)
+      if (!isPreview) {
+        storeStaticCache.set(store);
+        console.log(`Store saved to static cache: ${store.id}`);
+      }
+    }
 
     // Get product IDs to check for custom commissions
     const productIds = store.products.map(sp => sp.product.id);

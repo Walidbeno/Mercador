@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '@/lib/prisma';
+import { storeStaticCache } from '@/lib/storeStaticCache';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'PATCH') {
@@ -46,6 +47,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
       }
     });
+
+    // Invalidate the static cache for this store
+    storeStaticCache.invalidate({
+      id: storeId as string,
+      slug: store.slug as string
+    });
+    
+    console.log(`Static cache invalidated for store: ${storeId}`);
 
     return res.status(200).json({
       success: true,
