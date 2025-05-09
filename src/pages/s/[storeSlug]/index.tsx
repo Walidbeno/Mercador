@@ -433,7 +433,7 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
     }
 
     // Get product IDs to check for custom commissions
-    const productIds = store.products.map(sp => sp.product.id);
+    const productIds = store.products.map((sp: StoreProduct) => sp.product.id);
     console.log(`Found ${productIds.length} products in store`);
     
     // Fetch custom commissions if an affiliate ID is provided
@@ -491,7 +491,7 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
     // Convert Decimal values to numbers for JSON serialization and apply custom commissions
     const serializedStore = {
       ...store,
-      products: store.products.map(sp => {
+      products: store.products.map((sp: StoreProduct) => {
         // Check if there's a custom commission for this product
         const customCommission = customCommissions[sp.product.id];
         const defaultCommission = Number(sp.product.commissionRate);
