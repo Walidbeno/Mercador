@@ -7,7 +7,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const { id } = req.query;
+    const { storeId } = req.query;
     
     // In a real app, we would validate the user's token here
     // to ensure they have permission to edit this store
@@ -23,7 +23,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Verify store exists before updating
     const store = await prisma.store.findUnique({
-      where: { id: id as string }
+      where: { id: storeId as string }
     });
 
     if (!store) {
@@ -32,7 +32,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Update store with customization data
     const updatedStore = await prisma.store.update({
-      where: { id: id as string },
+      where: { id: storeId as string },
       data: {
         name: name || undefined,
         description: description || undefined,
