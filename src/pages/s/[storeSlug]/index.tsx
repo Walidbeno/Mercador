@@ -378,6 +378,37 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
       store = await storeCache.get(storeSlug, 'slug');
       if (store) {
         console.log(`Redis cache hit for store: ${storeSlug}`);
+        
+        // If store is from cache, we need to fetch the latest products
+        const storeWithProducts = await prisma.store.findUnique({
+          where: { id: store.id },
+          include: {
+            products: {
+              where: { isActive: true },
+              include: {
+                product: {
+                  select: {
+                    id: true,
+                    title: true,
+                    description: true,
+                    shortDescription: true,
+                    basePrice: true,
+                    commissionRate: true,
+                    imageUrl: true,
+                    thumbnailUrl: true
+                  }
+                }
+              }
+            }
+          }
+        });
+        
+        if (storeWithProducts) {
+          store = {
+            ...store,
+            products: storeWithProducts.products
+          };
+        }
       }
     }
 
@@ -415,9 +446,19 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
       
       // Save to Redis cache for future requests (unless in preview mode)
       if (!isPreview) {
-        await storeCache.set(store);
+        // Save a version without products to cache
+        const storeForCache = {
+          ...store,
+          products: undefined // Don't cache products as they change frequently
+        };
+        await storeCache.set(storeForCache);
         console.log(`Store saved to Redis cache: ${store.id}`);
       }
+    }
+
+    // Ensure products array exists
+    if (!store.products) {
+      store.products = [];
     }
 
     // Get product IDs to check for custom commissions
