@@ -338,8 +338,41 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
     // Get store from cache first
     let store = await storeCache.get(storeSlug, 'slug');
 
-    // If not in cache, get from database
-    if (!store) {
+    // If store is from cache, we need to fetch the products separately
+    // because they might not be included in the cached data
+    if (store) {
+      const storeWithProducts = await prisma.store.findUnique({
+        where: { slug: storeSlug },
+        select: {
+          products: {
+            where: { isActive: true },
+            include: {
+              product: {
+                select: {
+                  id: true,
+                  title: true,
+                  description: true,
+                  shortDescription: true,
+                  basePrice: true,
+                  commissionRate: true,
+                  imageUrl: true,
+                  thumbnailUrl: true,
+                  status: true
+                }
+              }
+            }
+          }
+        }
+      });
+
+      if (storeWithProducts) {
+        store = {
+          ...store,
+          products: storeWithProducts.products
+        };
+      }
+    } else {
+      // If not in cache, get from database with all data
       store = await prisma.store.findUnique({
         where: { slug: storeSlug },
         select: {
@@ -380,6 +413,11 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
       await storeCache.set(store);
     }
 
+    // Ensure store has products array even if empty
+    if (!store.products) {
+      store.products = [];
+    }
+
     // Ensure sections exist in settings
     if (!store.settings?.sections) {
       store.settings = {
@@ -411,7 +449,7 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
     // Rest of the existing code for custom commissions...
     const productIds = store.products.map((storeProduct: { product: { id: string } }) => storeProduct.product.id);
     let customCommissions: Record<string, number> = {};
-    
+
     if (affiliateId && productIds.length > 0) {
       const customCommissionRecords = await prisma.affiliateProductCommission.findMany({
         where: {
@@ -421,35 +459,24 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
         }
       });
 
-      customCommissions = customCommissionRecords.reduce((acc, cc) => {
-        acc[cc.productId] = Number(cc.commission);
+      customCommissions = customCommissionRecords.reduce((acc, record) => {
+        acc[record.productId] = Number(record.commission);
         return acc;
       }, {} as Record<string, number>);
-    }
 
-    // Convert Decimal values to numbers and apply custom commissions
-    const serializedStore = {
-      ...store,
-      products: (store.products as any[]).map(sp => {
-        const customCommission = customCommissions[sp.product.id];
-        const defaultCommission = toNumber(sp.product.commissionRate);
-        const finalCommission = customCommission !== undefined ? customCommission : defaultCommission;
-        
-        return {
-          ...sp,
-          product: {
-            ...sp.product,
-            basePrice: toNumber(sp.product.basePrice),
-            commissionRate: finalCommission,
-            hasCustomCommission: customCommission !== undefined
-          }
-        };
-      })
-    };
+      // Add hasCustomCommission flag to products
+      store.products = store.products.map((sp: StoreProduct) => ({
+        ...sp,
+        product: {
+          ...sp.product,
+          hasCustomCommission: !!customCommissions[sp.product.id]
+        }
+      }));
+    }
 
     return {
       props: {
-        store: serializedStore,
+        store,
         affiliateId: affiliateId || null
       }
     };
