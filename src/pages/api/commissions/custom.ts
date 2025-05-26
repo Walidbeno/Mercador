@@ -2,10 +2,17 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '@/lib/prisma';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'POST' && req.method !== 'PATCH') {
-    return res.status(405).json({ error: 'Method not allowed' });
+  switch (req.method) {
+    case 'POST':
+      return handleSetCustomCommission(req, res);
+    case 'GET':
+      return handleGetCustomCommissions(req, res);
+    default:
+      return res.status(405).json({ error: 'Method not allowed' });
   }
+}
 
+async function handleSetCustomCommission(req: NextApiRequest, res: NextApiResponse) {
   try {
     // Validate API key
     const apiKey = req.headers['x-api-key'];
@@ -13,71 +20,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(401).json({ error: 'Invalid API key' });
     }
 
-    // Validate that the API key starts with 'mercacio_pk_'
-    if (!apiKey.toString().startsWith('mercacio_pk_')) {
-      return res.status(401).json({ error: 'Invalid API key format' });
-    }
-
-    const {
-      productId,
-      affiliateId,
-      commission, // Fixed commission amount in euros
-      isActive = true
-    } = req.body;
-
-    console.log('Received commission update request:', {
-      method: req.method,
-      productId,
-      affiliateId,
-      commission,
-      isActive
-    });
+    const { productId, affiliateId, commission } = req.body;
 
     // Validate required fields
-    if (!productId || !affiliateId) {
+    if (!productId || !affiliateId || commission === undefined) {
       return res.status(400).json({ 
-        error: 'Required fields missing: productId, affiliateId' 
+        error: 'Product ID, Affiliate ID, and commission are required' 
       });
     }
 
-    // If commission is not provided, remove any custom commission
-    if (commission === undefined || commission === null) {
-      // Check if a custom commission exists
-      const existingCommission = await prisma.affiliateProductCommission.findUnique({
-        where: {
-          productId_affiliateId: {
-            productId,
-            affiliateId
-          }
-        }
-      });
-
-      if (existingCommission) {
-        // Delete the custom commission to revert to default
-        await prisma.affiliateProductCommission.delete({
-          where: {
-            id: existingCommission.id
-          }
-        });
-
-        console.log('Removed custom commission for:', { productId, affiliateId });
-        return res.status(200).json({
-          success: true,
-          message: 'Custom commission removed, reverting to default product commission',
-          synced: true
-        });
-      }
-
-      return res.status(200).json({
-        success: true,
-        message: 'No custom commission found, using default product commission',
-        synced: true
-      });
-    }
-
-    // Validate commission amount
-    const amount = parseFloat(commission);
-    if (isNaN(amount) || amount < 0) {
+    // Validate commission is a positive number
+    if (typeof commission !== 'number' || commission < 0) {
       return res.status(400).json({ 
         error: 'Commission must be a positive number' 
       });
@@ -100,36 +53,67 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           affiliateId
         }
       },
+      update: {
+        commission,
+        isActive: true
+      },
       create: {
         productId,
         affiliateId,
-        commission: amount,
-        isActive,
-        externalSync: true
-      },
-      update: {
-        commission: amount,
-        isActive,
-        externalSync: true,
-        updatedAt: new Date()
+        commission,
+        isActive: true
       }
     });
 
-    console.log('Updated custom commission:', customCommission);
     return res.status(200).json({
       success: true,
-      message: 'Custom commission updated successfully',
-      data: customCommission,
-      synced: true
+      commission: customCommission
     });
 
   } catch (error) {
-    console.error('Custom commission error:', error);
-    return res.status(500).json({ 
-      success: false,
-      error: 'Failed to update custom commission',
-      details: error instanceof Error ? error.message : 'Unknown error',
-      synced: false
+    console.error('Error setting custom commission:', error);
+    return res.status(500).json({ error: 'Failed to set custom commission' });
+  }
+}
+
+async function handleGetCustomCommissions(req: NextApiRequest, res: NextApiResponse) {
+  try {
+    const { affiliateId, productId } = req.query;
+
+    // Build where clause based on provided filters
+    const where: any = {
+      isActive: true
+    };
+
+    if (affiliateId) {
+      where.affiliateId = affiliateId as string;
+    }
+
+    if (productId) {
+      where.productId = productId as string;
+    }
+
+    // Get custom commissions
+    const commissions = await prisma.affiliateProductCommission.findMany({
+      where,
+      include: {
+        product: {
+          select: {
+            title: true,
+            basePrice: true,
+            commissionRate: true
+          }
+        }
+      }
     });
+
+    return res.status(200).json({
+      success: true,
+      commissions
+    });
+
+  } catch (error) {
+    console.error('Error getting custom commissions:', error);
+    return res.status(500).json({ error: 'Failed to get custom commissions' });
   }
 } 
