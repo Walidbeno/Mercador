@@ -7,6 +7,7 @@ import { ThemeProvider } from '@/context/ThemeContext';
 import Button from '@/components/Button';
 import { useRouter } from 'next/router';
 import { storeCache } from '@/lib/redis';
+import Link from 'next/link';
 
 interface StoreProduct {
   id: string;
@@ -408,7 +409,7 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
     }
 
     // Rest of the existing code for custom commissions...
-    const productIds = store.products.map(sp => sp.product.id);
+    const productIds = store.products.map((storeProduct: { product: { id: string } }) => storeProduct.product.id);
     let customCommissions: Record<string, number> = {};
     
     if (affiliateId && productIds.length > 0) {
