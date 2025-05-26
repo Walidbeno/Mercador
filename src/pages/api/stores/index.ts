@@ -9,6 +9,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return handleCreateStore(req, res);
     case 'GET':
       return handleGetStores(req, res);
+    case 'DELETE':
+      return handleDeleteStore(req, res);
     default:
       return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -107,5 +109,103 @@ async function handleGetStores(req: NextApiRequest, res: NextApiResponse) {
   } catch (error) {
     console.error('Error fetching stores:', error);
     return res.status(500).json({ error: 'Failed to fetch stores' });
+  }
+}
+
+async function handleDeleteStore(req: NextApiRequest, res: NextApiResponse) {
+  try {
+    // Validate API key
+    const apiKey = req.headers['x-api-key'];
+    if (!apiKey || apiKey !== process.env.MERCACIO_API_KEY) {
+      return res.status(401).json({ error: 'Invalid API key' });
+    }
+
+    const { storeId, ownerId } = req.body;
+
+    // Validate required fields
+    if (!storeId || !ownerId) {
+      return res.status(400).json({ 
+        error: 'Store ID and Owner ID are required' 
+      });
+    }
+
+    // First, verify the store exists and belongs to the owner
+    const store = await prisma.store.findFirst({
+      where: {
+        id: storeId,
+        ownerId,
+        isActive: true
+      }
+    });
+
+    if (!store) {
+      return res.status(404).json({ error: 'Store not found or unauthorized' });
+    }
+
+    // Start a transaction to handle all related data
+    const result = await prisma.$transaction(async (tx) => {
+      // Soft delete cart items
+      await tx.cartItem.updateMany({
+        where: {
+          cart: {
+            storeId: storeId
+          }
+        },
+        data: {
+          updatedAt: new Date()
+        }
+      });
+
+      // Soft delete carts
+      await tx.cart.updateMany({
+        where: {
+          storeId: storeId
+        },
+        data: {
+          status: 'deleted',
+          updatedAt: new Date()
+        }
+      });
+
+      // Soft delete store products
+      await tx.storeProduct.updateMany({
+        where: {
+          storeId: storeId
+        },
+        data: {
+          isActive: false,
+          updatedAt: new Date()
+        }
+      });
+
+      // Finally, soft delete the store
+      const deletedStore = await tx.store.update({
+        where: {
+          id: storeId
+        },
+        data: {
+          isActive: false,
+          updatedAt: new Date()
+        }
+      });
+
+      return deletedStore;
+    });
+
+    // Invalidate the store cache
+    await storeCache.invalidate({
+      id: result.id,
+      slug: result.slug
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Store deleted successfully',
+      store: result
+    });
+
+  } catch (error) {
+    console.error('Store deletion error:', error);
+    return res.status(500).json({ error: 'Failed to delete store' });
   }
 } 

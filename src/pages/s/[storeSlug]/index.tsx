@@ -37,6 +37,14 @@ interface Store {
     language: string;
     primaryColor?: string;
     secondaryColor?: string;
+    sections?: Array<{
+      id: string;
+      type: string;
+      title: string;
+      content?: string;
+      order: number;
+      settings?: any;
+    }>;
   };
   products: StoreProduct[];
 }
@@ -46,115 +54,36 @@ interface Props {
   affiliateId: string | null;
 }
 
+// Helper function to convert string/number to number
+const toNumber = (value: string | number): number => {
+  if (typeof value === 'string') {
+    return parseFloat(value);
+  }
+  return value;
+};
+
 const StorePage: NextPage<Props> = ({ store, affiliateId }) => {
-  // Get store language from settings or default to English
-  const storeLanguage = store.settings?.language || 'en';
-  
-  // Extract theme colors from store settings or theme
-  const primaryColor = store.theme?.primaryColor || store.settings?.primaryColor || '#4f46e5';
-  const secondaryColor = store.theme?.secondaryColor || store.settings?.secondaryColor || '#3730a3';
-  
-  // Add state for the test affiliate ID
-  const [testAffiliateId, setTestAffiliateId] = useState('');
-  const [showTestBanner, setShowTestBanner] = useState(true);
-
-  // Add this inside the component, before the return statement
-  const [isOwner, setIsOwner] = useState<boolean>(false);
-
-  // Log affiliate ID information to the client console for debugging
   const router = useRouter();
-  useEffect(() => {
-    console.log('Home Page loaded with affiliate ID:', affiliateId);
-    console.log('Using theme colors:', { primaryColor, secondaryColor });
-    
-    // Check if current user is owner (in a real app, this would check auth)
-    // For demo purposes, we'll use a query param isOwner=true
-    setIsOwner(router.query.isOwner === 'true');
-    
-    // Add affiliate ID to all product links dynamically
-    if (affiliateId) {
-      document.querySelectorAll('a[href^="/s/"]').forEach(link => {
-        const href = link.getAttribute('href');
-        if (href && !href.includes('?aff=')) {
-          link.setAttribute('href', `${href}${href.includes('?') ? '&' : '?'}aff=${affiliateId}`);
-        }
-      });
-    }
-  }, [affiliateId, primaryColor, secondaryColor, router.query.isOwner]);
+  const storeLanguage = store.settings?.language || 'en';
+  const [isOwner, setIsOwner] = useState(false);
 
+  // Helper function to calculate total price
+  const calculateTotalPrice = (basePrice: number, commissionRate: number) => {
+    return basePrice + commissionRate;
+  };
+
+  // Helper function to format price
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat(store.settings?.language || 'en', {
+    return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: store.settings?.currency || 'EUR'
     }).format(price);
   };
 
-  const calculateTotalPrice = (basePrice: number, commissionRate: number) => {
-    return basePrice + commissionRate;
-  };
-  
-  // Function to apply test affiliate ID
-  const applyTestAffiliateId = () => {
-    if (testAffiliateId) {
-      window.location.href = `${window.location.pathname}?aff=${testAffiliateId}`;
-    }
-  };
-
   return (
-    <ThemeProvider theme={{ primaryColor, secondaryColor }}>
+    <ThemeProvider theme={store.theme}>
       <Layout title={store.name}>
         <div className="min-h-screen bg-gray-50">
-          {!affiliateId && showTestBanner && (
-            <div className="bg-yellow-100 p-4">
-              <div className="max-w-5xl mx-auto flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <span>Test a specific affiliate ID:</span>
-                  <input
-                    type="text"
-                    value={testAffiliateId}
-                    onChange={(e) => setTestAffiliateId(e.target.value)}
-                    placeholder="Enter affiliate ID"
-                    className="border px-2 py-1 rounded"
-                  />
-                  <Button
-                    onClick={applyTestAffiliateId}
-                    size="sm"
-                  >
-                    Apply
-                  </Button>
-                  {/* Quick button to use 0b7f3250-8512-41ee-aa44-a389c34b5bc8 */}
-                  <Button
-                    onClick={() => {
-                      window.location.href = `${window.location.pathname}?aff=0b7f3250-8512-41ee-aa44-a389c34b5bc8`;
-                    }}
-                    variant="secondary"
-                    size="sm"
-                  >
-                    Use Available Affiliate ID
-                  </Button>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Button
-                    onClick={() => {
-                      const url = new URL(window.location.href);
-                      url.searchParams.set('isOwner', isOwner ? 'false' : 'true');
-                      window.location.href = url.toString();
-                    }}
-                    variant="outline"
-                    size="sm"
-                  >
-                    {isOwner ? 'Exit Owner Mode' : 'Enter Owner Mode'}
-                  </Button>
-                  <button
-                    onClick={() => setShowTestBanner(false)}
-                    className="text-gray-500 hover:text-gray-700"
-                  >
-                    ✕
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
           {/* Store Header */}
           <div className="bg-white shadow">
             <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -238,59 +167,104 @@ const StorePage: NextPage<Props> = ({ store, affiliateId }) => {
           </div>
 
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-            {/* Featured Products */}
-            {store.products.some(p => p.featured) && (
-              <div className="py-12">
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">Featured Products</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {store.products
-                    .filter(p => p.featured)
-                    .map(({ id, product }) => (
+            {/* Render Store Sections */}
+            {store.settings?.sections?.sort((a, b) => a.order - b.order).map(section => {
+              switch (section.type) {
+                case 'hero':
+                  return (
+                    <div key={section.id} className="py-16 text-center">
+                      <h1 className="text-4xl font-bold text-gray-900 mb-4">{section.title}</h1>
+                      {section.settings?.subtitle && (
+                        <p className="text-xl text-gray-600 mb-8">{section.settings.subtitle}</p>
+                      )}
                       <a 
-                        key={id} 
-                        href={`/s/${store.slug}/p/${product.id}${affiliateId ? `?aff=${affiliateId}` : ''}`}
-                        className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow duration-200"
+                        href="#featured-products"
+                        className="inline-block bg-indigo-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-indigo-700 transition-colors"
                       >
-                        <div className="h-48 rounded-t-lg overflow-hidden">
-                          <img 
-                            src={product.imageUrl || product.thumbnailUrl || '/images/placeholder.jpg'} 
-                            alt={product.title}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <div className="p-4">
-                          <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                            {product.title}
-                          </h3>
-                          <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                            {product.shortDescription || product.description}
-                          </p>
-                          <div className="flex justify-between items-center">
-                            <span className="text-xl font-bold text-gray-900">
-                              {formatPrice(calculateTotalPrice(product.basePrice, product.commissionRate))}
-                            </span>
-                            {product.hasCustomCommission && (
-                              <span className="ml-2 bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
-                                Custom
-                              </span>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Add Order Now button */}
-                        <div className="px-4 pb-4 mt-2">
-                          <a 
-                            href={`/s/${store.slug}/p/${product.id}${affiliateId ? `?aff=${affiliateId}` : ''}`}
-                            className="block w-full bg-indigo-600 text-white text-center py-3 rounded-lg font-medium hover:bg-indigo-700 transition-colors shadow-sm hover:shadow"
-                          >
-                            {getTranslation(storeLanguage, 'orderNowButton')} →
-                          </a>
-                        </div>
+                        {section.settings?.buttonText || 'Shop Now'}
                       </a>
-                    ))}
-                </div>
-              </div>
-            )}
+                    </div>
+                  );
+                
+                case 'featuredProducts':
+                  return (
+                    <div key={section.id} id="featured-products" className="py-12">
+                      <h2 className="text-2xl font-bold text-gray-900 mb-6">{section.title}</h2>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {store.products
+                          .filter(p => p.featured)
+                          .slice(0, section.settings?.productCount || 3)
+                          .map(({ id, product }) => (
+                            <a 
+                              key={id} 
+                              href={`/s/${store.slug}/p/${product.id}${affiliateId ? `?aff=${affiliateId}` : ''}`}
+                              className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow duration-200"
+                            >
+                              <div className="h-48 rounded-t-lg overflow-hidden">
+                                <img 
+                                  src={product.imageUrl || product.thumbnailUrl || '/images/placeholder.jpg'} 
+                                  alt={product.title}
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                              <div className="p-4">
+                                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                                  {product.title}
+                                </h3>
+                                <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                                  {product.shortDescription || product.description}
+                                </p>
+                                <div className="flex justify-between items-center">
+                                  <span className="text-xl font-bold text-gray-900">
+                                    {formatPrice(calculateTotalPrice(toNumber(product.basePrice), toNumber(product.commissionRate)))}
+                                  </span>
+                                  {product.hasCustomCommission && (
+                                    <span className="ml-2 bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
+                                      Custom
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* Add Order Now button */}
+                              <div className="px-4 pb-4 mt-2">
+                                <a 
+                                  href={`/s/${store.slug}/p/${product.id}${affiliateId ? `?aff=${affiliateId}` : ''}`}
+                                  className="block w-full bg-indigo-600 text-white text-center py-3 rounded-lg font-medium hover:bg-indigo-700 transition-colors shadow-sm hover:shadow"
+                                >
+                                  {getTranslation(storeLanguage, 'orderNowButton')} →
+                                </a>
+                              </div>
+                            </a>
+                          ))}
+                      </div>
+                    </div>
+                  );
+                
+                case 'about':
+                  return (
+                    <div key={section.id} className="py-12">
+                      <h2 className="text-2xl font-bold text-gray-900 mb-6">{section.title}</h2>
+                      <div className="prose prose-lg max-w-none">
+                        {section.content}
+                      </div>
+                    </div>
+                  );
+                
+                case 'custom':
+                  return (
+                    <div key={section.id} className="py-12">
+                      <h2 className="text-2xl font-bold text-gray-900 mb-6">{section.title}</h2>
+                      <div className="prose prose-lg max-w-none">
+                        {section.content}
+                      </div>
+                    </div>
+                  );
+                
+                default:
+                  return null;
+              }
+            })}
 
             {/* All Products */}
             <div className="py-12">
@@ -318,7 +292,7 @@ const StorePage: NextPage<Props> = ({ store, affiliateId }) => {
                       </p>
                       <div className="flex justify-between items-center">
                         <span className="text-xl font-bold text-gray-900">
-                          {formatPrice(calculateTotalPrice(product.basePrice, product.commissionRate))}
+                          {formatPrice(calculateTotalPrice(toNumber(product.basePrice), toNumber(product.commissionRate)))}
                         </span>
                         {product.hasCustomCommission && (
                           <span className="ml-2 bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
@@ -358,67 +332,24 @@ const StorePage: NextPage<Props> = ({ store, affiliateId }) => {
 export const getServerSideProps: GetServerSideProps = async ({ params, query }) => {
   try {
     const storeSlug = params?.storeSlug as string;
-    
-    // Extract affiliate ID from query
-    let affiliateId = '';
-    if (query.aff) {
-      if (typeof query.aff === 'string') {
-        affiliateId = query.aff;
-      } else if (Array.isArray(query.aff) && query.aff.length > 0) {
-        affiliateId = query.aff[0];
-      }
-    }
+    const affiliateId = query.aff as string;
 
-    // Check for preview mode - skip cache when previewing
-    const isPreview = query.preview === 'true';
-    
-    // Try to get store from Redis cache unless in preview mode
-    let store = null;
-    if (!isPreview) {
-      store = await storeCache.get(storeSlug, 'slug');
-      if (store) {
-        console.log(`Redis cache hit for store: ${storeSlug}`);
-        
-        // If store is from cache, we need to fetch the latest products
-        const storeWithProducts = await prisma.store.findUnique({
-          where: { id: store.id },
-          include: {
-            products: {
-              where: { isActive: true },
-              include: {
-                product: {
-                  select: {
-                    id: true,
-                    title: true,
-                    description: true,
-                    shortDescription: true,
-                    basePrice: true,
-                    commissionRate: true,
-                    imageUrl: true,
-                    thumbnailUrl: true
-                  }
-                }
-              }
-            }
-          }
-        });
-        
-        if (storeWithProducts) {
-          store = {
-            ...store,
-            products: storeWithProducts.products
-          };
-        }
-      }
-    }
+    // Get store from cache first
+    let store = await storeCache.get(storeSlug, 'slug');
 
-    // If cache missed or in preview mode, fetch from database
+    // If not in cache, get from database
     if (!store) {
-      console.log(`Redis cache miss for store: ${storeSlug}, fetching from database`);
-      
       store = await prisma.store.findUnique({
         where: { slug: storeSlug },
-        include: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          description: true,
+          logo: true,
+          banner: true,
+          theme: true,
+          settings: true,
           products: {
             where: { isActive: true },
             include: {
@@ -431,7 +362,8 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
                   basePrice: true,
                   commissionRate: true,
                   imageUrl: true,
-                  thumbnailUrl: true
+                  thumbnailUrl: true,
+                  status: true
                 }
               }
             }
@@ -440,37 +372,46 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
       });
 
       if (!store) {
-        console.log(`Store not found: storeSlug=${storeSlug}`);
         return { notFound: true };
       }
-      
-      // Save to Redis cache for future requests (unless in preview mode)
-      if (!isPreview) {
-        // Save a version without products to cache
-        const storeForCache = {
-          ...store,
-          products: undefined // Don't cache products as they change frequently
-        };
-        await storeCache.set(storeForCache);
-        console.log(`Store saved to Redis cache: ${store.id}`);
-      }
+
+      // Cache the store for future requests
+      await storeCache.set(store);
     }
 
-    // Ensure products array exists
-    if (!store.products) {
-      store.products = [];
+    // Ensure sections exist in settings
+    if (!store.settings?.sections) {
+      store.settings = {
+        ...store.settings,
+        sections: [
+          {
+            id: '1',
+            type: 'hero',
+            title: 'Welcome to our Store',
+            order: 0,
+            settings: {
+              subtitle: 'Discover our amazing products',
+              buttonText: 'Shop Now'
+            }
+          },
+          {
+            id: '2',
+            type: 'featuredProducts',
+            title: 'Featured Products',
+            order: 1,
+            settings: {
+              productCount: 3
+            }
+          }
+        ]
+      };
     }
 
-    // Get product IDs to check for custom commissions
-    const productIds = store.products.map((sp: StoreProduct) => sp.product.id);
-    console.log(`Found ${productIds.length} products in store`);
-    
-    // Fetch custom commissions if an affiliate ID is provided
+    // Rest of the existing code for custom commissions...
+    const productIds = store.products.map(sp => sp.product.id);
     let customCommissions: Record<string, number> = {};
     
     if (affiliateId && productIds.length > 0) {
-      console.log(`Checking custom commissions for affiliate: ${affiliateId}`);
-      
       const customCommissionRecords = await prisma.affiliateProductCommission.findMany({
         where: {
           affiliateId,
@@ -483,28 +424,21 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
         acc[cc.productId] = Number(cc.commission);
         return acc;
       }, {} as Record<string, number>);
-
-      console.log(`Found ${customCommissionRecords.length} custom commissions`);
     }
 
-    // Convert Decimal values to numbers for JSON serialization and apply custom commissions
+    // Convert Decimal values to numbers and apply custom commissions
     const serializedStore = {
       ...store,
-      products: store.products.map((sp: StoreProduct) => {
-        // Check if there's a custom commission for this product
+      products: (store.products as any[]).map(sp => {
         const customCommission = customCommissions[sp.product.id];
-        const defaultCommission = Number(sp.product.commissionRate);
+        const defaultCommission = toNumber(sp.product.commissionRate);
         const finalCommission = customCommission !== undefined ? customCommission : defaultCommission;
-        
-        if (customCommission !== undefined) {
-          console.log(`Using custom commission for product ${sp.product.id}: ${customCommission} (default: ${defaultCommission})`);
-        }
         
         return {
           ...sp,
           product: {
             ...sp.product,
-            basePrice: Number(sp.product.basePrice),
+            basePrice: toNumber(sp.product.basePrice),
             commissionRate: finalCommission,
             hasCustomCommission: customCommission !== undefined
           }

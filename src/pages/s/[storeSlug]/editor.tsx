@@ -161,7 +161,8 @@ const StoreEditor: NextPage<Props> = ({ store, ownerToken }) => {
 
     try {
       const updatedStore = {
-        ...currentStore,
+        name: currentStore.name,
+        description: currentStore.description,
         logo: logoPreview,
         banner: bannerPreview,
         theme: {
@@ -171,31 +172,41 @@ const StoreEditor: NextPage<Props> = ({ store, ownerToken }) => {
         },
         settings: {
           ...currentStore.settings,
-          logoSize
-        },
-        sections
+          logoSize,
+          sections: sections.map(section => ({
+            ...section,
+            order: section.order || 0
+          }))
+        }
       };
 
-      // In a real app, we would send this to the API
-      console.log('Saving store changes:', updatedStore);
-
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      setCurrentStore(updatedStore);
-      setSaveMessage('Changes saved successfully!');
+      // Make the actual API call to save changes
+      const response = await fetch(`/api/stores/${store.id}/customize`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': process.env.NEXT_PUBLIC_MERCACIO_API_KEY || ''
+        },
+        body: JSON.stringify(updatedStore)
+      });
       
-      // In a real implementation, you would update the store via API
-      // const response = await fetch(`/api/stores/${store.id}`, {
-      //   method: 'PATCH',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //     'Authorization': `Bearer ${ownerToken}`
-      //   },
-      //   body: JSON.stringify(updatedStore)
-      // });
+      if (!response.ok) {
+        throw new Error('Failed to save changes');
+      }
+
+      const result = await response.json();
       
-      // if (!response.ok) throw new Error('Failed to save changes');
+      if (result.success) {
+        setCurrentStore(result.store);
+        setSections(result.store.settings?.sections || []);
+        setSaveMessage('Changes saved successfully!');
+        
+        // Redirect to store page to see changes
+        router.push(`/s/${store.slug}`);
+      } else {
+        throw new Error(result.error || 'Failed to save changes');
+      }
+
     } catch (error) {
       console.error('Error saving changes:', error);
       setSaveMessage('Error saving changes. Please try again.');
