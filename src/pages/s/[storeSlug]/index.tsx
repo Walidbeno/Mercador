@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import { ThemeProvider } from '@/context/ThemeContext';
 import Button from '@/components/Button';
 import { useRouter } from 'next/router';
-import { storeStaticCache } from '@/lib/storeStaticCache';
+import { storeCache } from '@/lib/redis';
 
 interface StoreProduct {
   id: string;
@@ -372,28 +372,18 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
     // Check for preview mode - skip cache when previewing
     const isPreview = query.preview === 'true';
     
-    // Try to get store from static cache unless in preview mode
+    // Try to get store from Redis cache unless in preview mode
     let store = null;
-    let cacheHit = false;
-    
     if (!isPreview) {
-      // First check if we have a slug reference
-      const slugReference = storeStaticCache.get(storeSlug, 'slug');
-      
-      if (slugReference && slugReference._type === 'reference') {
-        // We have a reference, fetch the full store data by ID
-        const cachedStore = storeStaticCache.get(slugReference.id, 'id');
-        if (cachedStore) {
-          console.log(`Static cache hit for store: ${storeSlug} (${slugReference.id})`);
-          store = cachedStore;
-          cacheHit = true;
-        }
+      store = await storeCache.get(storeSlug, 'slug');
+      if (store) {
+        console.log(`Redis cache hit for store: ${storeSlug}`);
       }
     }
 
     // If cache missed or in preview mode, fetch from database
     if (!store) {
-      console.log(`Static cache miss for store: ${storeSlug}, fetching from database`);
+      console.log(`Redis cache miss for store: ${storeSlug}, fetching from database`);
       
       store = await prisma.store.findUnique({
         where: { slug: storeSlug },
@@ -420,15 +410,13 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
 
       if (!store) {
         console.log(`Store not found: storeSlug=${storeSlug}`);
-        return {
-          notFound: true
-        };
+        return { notFound: true };
       }
       
-      // Save to static cache for future requests (unless in preview mode)
+      // Save to Redis cache for future requests (unless in preview mode)
       if (!isPreview) {
-        storeStaticCache.set(store);
-        console.log(`Store saved to static cache: ${store.id}`);
+        await storeCache.set(store);
+        console.log(`Store saved to Redis cache: ${store.id}`);
       }
     }
 
@@ -438,54 +426,24 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
     
     // Fetch custom commissions if an affiliate ID is provided
     let customCommissions: Record<string, number> = {};
+    
     if (affiliateId && productIds.length > 0) {
-      console.log(`Looking for custom commissions for ${productIds.length} products and affiliate ${affiliateId}`);
+      console.log(`Checking custom commissions for affiliate: ${affiliateId}`);
       
-      // First, check for all commissions regardless of affiliate
-      const allCommissions = await prisma.affiliateProductCommission.findMany({
+      const customCommissionRecords = await prisma.affiliateProductCommission.findMany({
         where: {
+          affiliateId,
           productId: { in: productIds },
           isActive: true
-        },
-        select: {
-          productId: true,
-          affiliateId: true,
-          commission: true
         }
       });
-      
-      console.log(`Found ${allCommissions.length} total commissions for these products (all affiliates):`);
-      allCommissions.forEach(comm => {
-        console.log(`  Product ${comm.productId}: ${comm.commission} (Affiliate: ${comm.affiliateId})`);
-      });
-      
-      // Now get commissions specific to our affiliate
-      const affiliateCommissions = await prisma.affiliateProductCommission.findMany({
-        where: {
-          affiliateId: affiliateId,
-          productId: { in: productIds },
-          isActive: true
-        },
-        select: {
-          productId: true,
-          commission: true
-        }
-      });
-      
-      // Create a map of product ID to custom commission
-      customCommissions = affiliateCommissions.reduce((acc: Record<string, number>, item) => {
-        acc[item.productId] = Number(item.commission);
+
+      customCommissions = customCommissionRecords.reduce((acc, cc) => {
+        acc[cc.productId] = Number(cc.commission);
         return acc;
-      }, {});
-      
-      console.log(`Found ${affiliateCommissions.length} custom commissions for affiliate ${affiliateId}`);
-      if (affiliateCommissions.length > 0) {
-        affiliateCommissions.forEach(comm => {
-          console.log(`Custom commission for product ${comm.productId}: ${comm.commission}`);
-        });
-      } else {
-        console.log('No custom commissions found for this affiliate');
-      }
+      }, {} as Record<string, number>);
+
+      console.log(`Found ${customCommissionRecords.length} custom commissions`);
     }
 
     // Convert Decimal values to numbers for JSON serialization and apply custom commissions
@@ -513,8 +471,6 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
       })
     };
 
-    console.log(`==== END STORE PAGE DEBUG ====`);
-
     return {
       props: {
         store: serializedStore,
@@ -523,9 +479,7 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
     };
   } catch (error) {
     console.error('Error fetching store:', error);
-    return {
-      notFound: true
-    };
+    return { notFound: true };
   }
 };
 

@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '@/lib/prisma';
 import { randomUUID } from 'crypto';
+import { storeCache } from '@/lib/redis';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   switch (req.method) {
@@ -57,6 +58,10 @@ async function handleCreateStore(req: NextApiRequest, res: NextApiResponse) {
       }
     });
 
+    // Cache the new store
+    await storeCache.set(store);
+    console.log(`New store cached: ${store.name} (${store.id})`);
+
     return res.status(201).json({
       success: true,
       store
@@ -76,6 +81,7 @@ async function handleGetStores(req: NextApiRequest, res: NextApiResponse) {
       return res.status(400).json({ error: 'Owner ID is required' });
     }
 
+    // For listing stores, we'll use the database directly since we need to query by owner
     const stores = await prisma.store.findMany({
       where: {
         ownerId: ownerId as string,
@@ -89,6 +95,9 @@ async function handleGetStores(req: NextApiRequest, res: NextApiResponse) {
         }
       }
     });
+
+    // Cache each store individually for future use
+    await Promise.all(stores.map(store => storeCache.set(store)));
 
     return res.status(200).json({
       success: true,
