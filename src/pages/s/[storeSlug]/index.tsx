@@ -46,6 +46,7 @@ interface Store {
       order: number;
       settings?: any;
     }>;
+    logoSize?: number;
   };
   products: StoreProduct[];
 }
@@ -94,7 +95,8 @@ const StorePage: NextPage<Props> = ({ store, affiliateId }) => {
                     <img 
                       src={store.logo} 
                       alt={store.name} 
-                      className="h-26 w-auto object-contain"
+                      style={{ height: `${store.settings?.logoSize || 150}px` }}
+                      className="w-auto object-contain"
                     />
                   </a>
                 ) : (

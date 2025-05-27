@@ -30,6 +30,7 @@ interface Store {
   settings: {
     currency: string;
     language: string;
+    logoSize?: number;
   };
   products: StoreProduct[];
 }
@@ -128,7 +129,8 @@ const CataloguePage: NextPage<Props> = ({ store, affiliateId }) => {
                   <img 
                     src={store.logo} 
                     alt={store.name} 
-                    className="h-12 w-auto object-contain mr-3"
+                    style={{ height: `${store.settings?.logoSize || 150}px` }}
+                    className="w-auto object-contain mr-3"
                   />
                 ) : (
                   <span className="text-xl font-semibold">{store.name}</span>
