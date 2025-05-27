@@ -199,10 +199,10 @@ const StoreEditor: NextPage<Props> = ({ store, ownerToken }) => {
       if (result.success) {
         setCurrentStore(result.store);
         setSections(result.store.settings?.sections || []);
-        setSaveMessage('Changes saved successfully!');
-        
-        // Redirect to store page to see changes
-        router.push(`/s/${store.slug}`);
+      setSaveMessage('Changes saved successfully!');
+      
+        // Redirect to store page to see changes with cache-busting parameter
+        router.push(`/s/${store.slug}?t=${Date.now()}`);
       } else {
         throw new Error(result.error || 'Failed to save changes');
       }

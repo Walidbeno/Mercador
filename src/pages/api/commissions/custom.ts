@@ -8,9 +8,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     case 'GET':
       return handleGetCustomCommissions(req, res);
     default:
-      return res.status(405).json({ error: 'Method not allowed' });
+    return res.status(405).json({ error: 'Method not allowed' });
   }
-}
+  }
 
 async function handleSetCustomCommission(req: NextApiRequest, res: NextApiResponse) {
   try {

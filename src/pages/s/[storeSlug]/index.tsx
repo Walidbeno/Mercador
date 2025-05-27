@@ -191,55 +191,55 @@ const StorePage: NextPage<Props> = ({ store, affiliateId }) => {
                   return (
                     <div key={section.id} id="featured-products" className="py-12">
                       <h2 className="text-2xl font-bold text-gray-900 mb-6">{section.title}</h2>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {store.products
-                          .filter(p => p.featured)
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {store.products
+                    .filter(p => p.featured)
                           .slice(0, section.settings?.productCount || 3)
-                          .map(({ id, product }) => (
-                            <a 
-                              key={id} 
-                              href={`/s/${store.slug}/p/${product.id}${affiliateId ? `?aff=${affiliateId}` : ''}`}
-                              className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow duration-200"
-                            >
-                              <div className="h-48 rounded-t-lg overflow-hidden">
-                                <img 
-                                  src={product.imageUrl || product.thumbnailUrl || '/images/placeholder.jpg'} 
-                                  alt={product.title}
-                                  className="w-full h-full object-cover"
-                                />
-                              </div>
-                              <div className="p-4">
-                                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                                  {product.title}
-                                </h3>
-                                <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                                  {product.shortDescription || product.description}
-                                </p>
-                                <div className="flex justify-between items-center">
-                                  <span className="text-xl font-bold text-gray-900">
+                    .map(({ id, product }) => (
+                      <a 
+                        key={id} 
+                        href={`/s/${store.slug}/p/${product.id}${affiliateId ? `?aff=${affiliateId}` : ''}`}
+                        className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow duration-200"
+                      >
+                        <div className="h-48 rounded-t-lg overflow-hidden">
+                          <img 
+                            src={product.imageUrl || product.thumbnailUrl || '/images/placeholder.jpg'} 
+                            alt={product.title}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="p-4">
+                          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                            {product.title}
+                          </h3>
+                          <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                            {product.shortDescription || product.description}
+                          </p>
+                          <div className="flex justify-between items-center">
+                            <span className="text-xl font-bold text-gray-900">
                                     {formatPrice(calculateTotalPrice(toNumber(product.basePrice), toNumber(product.commissionRate)))}
-                                  </span>
-                                  {product.hasCustomCommission && (
-                                    <span className="ml-2 bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
-                                      Custom
-                                    </span>
-                                  )}
-                                </div>
-                              </div>
+                            </span>
+                            {product.hasCustomCommission && (
+                              <span className="ml-2 bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
+                                Custom
+                              </span>
+                            )}
+                          </div>
+                        </div>
 
-                              {/* Add Order Now button */}
-                              <div className="px-4 pb-4 mt-2">
-                                <a 
-                                  href={`/s/${store.slug}/p/${product.id}${affiliateId ? `?aff=${affiliateId}` : ''}`}
-                                  className="block w-full bg-indigo-600 text-white text-center py-3 rounded-lg font-medium hover:bg-indigo-700 transition-colors shadow-sm hover:shadow"
-                                >
-                                  {getTranslation(storeLanguage, 'orderNowButton')} →
-                                </a>
-                              </div>
-                            </a>
-                          ))}
-                      </div>
-                    </div>
+                        {/* Add Order Now button */}
+                        <div className="px-4 pb-4 mt-2">
+                          <a 
+                            href={`/s/${store.slug}/p/${product.id}${affiliateId ? `?aff=${affiliateId}` : ''}`}
+                            className="block w-full bg-indigo-600 text-white text-center py-3 rounded-lg font-medium hover:bg-indigo-700 transition-colors shadow-sm hover:shadow"
+                          >
+                            {getTranslation(storeLanguage, 'orderNowButton')} →
+                          </a>
+                        </div>
+                      </a>
+                    ))}
+                </div>
+              </div>
                   );
                 
                 case 'about':
@@ -358,9 +358,9 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
                   imageUrl: true,
                   thumbnailUrl: true,
                   status: true
-                }
-              }
-            }
+        }
+      }
+    }
           }
         }
       });
@@ -408,7 +408,7 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
       if (!store) {
         return { notFound: true };
       }
-
+      
       // Cache the store for future requests
       await storeCache.set(store);
     }
@@ -458,7 +458,7 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
           isActive: true
         }
       });
-
+      
       customCommissions = customCommissionRecords.reduce((acc, record) => {
         acc[record.productId] = Number(record.commission);
         return acc;
@@ -466,11 +466,11 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
 
       // Add hasCustomCommission flag to products
       store.products = store.products.map((sp: StoreProduct) => ({
-        ...sp,
-        product: {
-          ...sp.product,
+          ...sp,
+          product: {
+            ...sp.product,
           hasCustomCommission: !!customCommissions[sp.product.id]
-        }
+          }
       }));
     }
 
