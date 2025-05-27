@@ -335,44 +335,14 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
     const storeSlug = params?.storeSlug as string;
     const affiliateId = query.aff as string;
 
-    // Get store from cache first
-    let store = await storeCache.get(storeSlug, 'slug');
+    // Force a fresh database fetch if there's a timestamp parameter
+    const shouldRefresh = !!query.t;
+    
+    // Get store from cache first, unless refresh is requested
+    let store = !shouldRefresh ? await storeCache.get(storeSlug, 'slug') : null;
 
-    // If store is from cache, we need to fetch the products separately
-    // because they might not be included in the cached data
-    if (store) {
-      const storeWithProducts = await prisma.store.findUnique({
-        where: { slug: storeSlug },
-        select: {
-          products: {
-            where: { isActive: true },
-            include: {
-              product: {
-                select: {
-                  id: true,
-                  title: true,
-                  description: true,
-                  shortDescription: true,
-                  basePrice: true,
-                  commissionRate: true,
-                  imageUrl: true,
-                  thumbnailUrl: true,
-                  status: true
-        }
-      }
-    }
-          }
-        }
-      });
-
-      if (storeWithProducts) {
-        store = {
-          ...store,
-          products: storeWithProducts.products
-        };
-      }
-    } else {
-      // If not in cache, get from database with all data
+    // If not in cache or refresh requested, get from database with all data
+    if (!store) {
       store = await prisma.store.findUnique({
         where: { slug: storeSlug },
         select: {
@@ -411,6 +381,38 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
       
       // Cache the store for future requests
       await storeCache.set(store);
+    } else {
+      // If store is from cache, fetch fresh products
+      const storeWithProducts = await prisma.store.findUnique({
+        where: { slug: storeSlug },
+        select: {
+          products: {
+            where: { isActive: true },
+            include: {
+              product: {
+                select: {
+                  id: true,
+                  title: true,
+                  description: true,
+                  shortDescription: true,
+                  basePrice: true,
+                  commissionRate: true,
+                  imageUrl: true,
+                  thumbnailUrl: true,
+                  status: true
+                }
+              }
+            }
+          }
+        }
+      });
+
+      if (storeWithProducts) {
+        store = {
+          ...store,
+          products: storeWithProducts.products
+        };
+      }
     }
 
     // Ensure store has products array even if empty
@@ -446,7 +448,7 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
       };
     }
 
-    // Rest of the existing code for custom commissions...
+    // Handle custom commissions
     const productIds = store.products.map((storeProduct: { product: { id: string } }) => storeProduct.product.id);
     let customCommissions: Record<string, number> = {};
 
@@ -464,13 +466,12 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
         return acc;
       }, {} as Record<string, number>);
 
-      // Add hasCustomCommission flag to products
       store.products = store.products.map((sp: StoreProduct) => ({
-          ...sp,
-          product: {
-            ...sp.product,
+        ...sp,
+        product: {
+          ...sp.product,
           hasCustomCommission: !!customCommissions[sp.product.id]
-          }
+        }
       }));
     }
 
