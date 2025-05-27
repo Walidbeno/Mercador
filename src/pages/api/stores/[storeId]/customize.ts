@@ -9,6 +9,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     const { storeId } = req.query;
+    console.log('Received customize request for store:', storeId);
     
     // In a real app, we would validate the user's token here
     // to ensure they have permission to edit this store
@@ -22,14 +23,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       sections
     } = req.body;
 
+    console.log('Received sections data:', sections);
+
     // Verify store exists before updating
     const store = await prisma.store.findUnique({
       where: { id: storeId as string }
     });
 
     if (!store) {
+      console.log('Store not found:', storeId);
       return res.status(404).json({ error: 'Store not found' });
     }
+
+    console.log('Current store settings:', store.settings);
 
     // Update store with customization data
     const updatedStore = await prisma.store.update({
@@ -48,13 +54,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
     });
 
+    console.log('Updated store settings:', updatedStore.settings);
+
     // First invalidate the old cache
+    console.log('Invalidating cache for store:', storeId);
     await storeCache.invalidate({
       id: storeId as string,
       slug: store.slug
     });
     
     // Then set the new cache
+    console.log('Setting new cache for store:', storeId);
     await storeCache.set(updatedStore);
     
     console.log(`Store cache updated for: ${updatedStore.name} (${updatedStore.id})`);

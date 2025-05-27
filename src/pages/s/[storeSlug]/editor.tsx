@@ -160,6 +160,8 @@ const StoreEditor: NextPage<Props> = ({ store, ownerToken }) => {
     setSaveMessage('');
 
     try {
+      console.log('Starting save process with sections:', sections);
+      
       const updatedStore = {
         name: currentStore.name,
         description: currentStore.description,
@@ -180,6 +182,8 @@ const StoreEditor: NextPage<Props> = ({ store, ownerToken }) => {
         }
       };
 
+      console.log('Sending updated store data:', updatedStore);
+
       // Make the actual API call to save changes
       const response = await fetch(`/api/stores/${store.id}/customize`, {
         method: 'PATCH',
@@ -195,14 +199,18 @@ const StoreEditor: NextPage<Props> = ({ store, ownerToken }) => {
       }
 
       const result = await response.json();
+      console.log('Received response from API:', result);
       
       if (result.success) {
+        console.log('Save successful, updating state with new store data');
         setCurrentStore(result.store);
         setSections(result.store.settings?.sections || []);
-      setSaveMessage('Changes saved successfully!');
+        setSaveMessage('Changes saved successfully!');
       
-        // Redirect to store page to see changes with cache-busting parameter
-        router.push(`/s/${store.slug}?t=${Date.now()}`);
+        // Redirect to store page with cache-busting parameter
+        const redirectUrl = `/s/${store.slug}?t=${Date.now()}`;
+        console.log('Redirecting to:', redirectUrl);
+        router.push(redirectUrl);
       } else {
         throw new Error(result.error || 'Failed to save changes');
       }

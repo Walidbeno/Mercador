@@ -338,11 +338,17 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
     const affiliateId = query.aff as string;
     const shouldRefresh = !!query.t;
 
+    console.log('Fetching store data for slug:', storeSlug);
+    console.log('Should refresh cache:', shouldRefresh);
+
     // Get store from cache first, unless refresh is requested
     let store = !shouldRefresh ? await storeCache.get(storeSlug, 'slug') : null;
+    
+    console.log('Store from cache:', store ? 'Found' : 'Not found');
 
     // If not in cache or refresh requested, get from database
     if (!store) {
+      console.log('Fetching fresh store data from database');
       store = await prisma.store.findUnique({
         where: { slug: storeSlug },
         include: {
@@ -358,8 +364,7 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
                   basePrice: true,
                   commissionRate: true,
                   imageUrl: true,
-                  thumbnailUrl: true,
-                  status: true
+                  thumbnailUrl: true
                 }
               }
             }
@@ -368,109 +373,20 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
       });
 
       if (!store) {
+        console.log('Store not found in database');
         return { notFound: true };
       }
 
-      // Cache the store for future requests
-      await storeCache.set(store);
-    } else {
-      // If store is from cache, fetch fresh products
-      const storeWithProducts = await prisma.store.findUnique({
-        where: { slug: storeSlug },
-        select: {
-          products: {
-            where: { isActive: true },
-            include: {
-              product: {
-                select: {
-                  id: true,
-                  title: true,
-                  description: true,
-                  shortDescription: true,
-                  basePrice: true,
-                  commissionRate: true,
-                  imageUrl: true,
-                  thumbnailUrl: true,
-                  status: true
-                }
-              }
-            }
-          }
-        }
-      });
-
-      if (storeWithProducts) {
-        store = {
-          ...store,
-          products: storeWithProducts.products
-        };
-      }
-    }
-
-    // Ensure store has products array even if empty
-    if (!store.products) {
-      store.products = [];
-    }
-
-    // Ensure settings and sections exist
-    if (!store.settings) {
-      store.settings = {};
-    }
-
-    if (!store.settings.sections) {
-      store.settings.sections = [
-        {
-          id: '1',
-          type: 'hero',
-          title: 'Welcome to our Store',
-          order: 0,
-          settings: {
-            subtitle: 'Discover our amazing products',
-            buttonText: 'Shop Now'
-          }
-        },
-        {
-          id: '2',
-          type: 'featuredProducts',
-          title: 'Featured Products',
-          order: 1,
-          settings: {
-            productCount: 3
-          }
-        }
-      ];
-    }
-
-    // Handle custom commissions
-    const productIds = store.products.map((storeProduct: { product: { id: string } }) => storeProduct.product.id);
-    let customCommissions: Record<string, number> = {};
-
-    if (affiliateId && productIds.length > 0) {
-      const customCommissionRecords = await prisma.affiliateProductCommission.findMany({
-        where: {
-          affiliateId,
-          productId: { in: productIds },
-          isActive: true
-        }
-      });
+      console.log('Store sections:', store.settings?.sections);
       
-      customCommissions = customCommissionRecords.reduce((acc, record) => {
-        acc[record.productId] = Number(record.commission);
-        return acc;
-      }, {} as Record<string, number>);
-
-      store.products = store.products.map((sp: StoreProduct) => ({
-        ...sp,
-        product: {
-          ...sp.product,
-          hasCustomCommission: !!customCommissions[sp.product.id]
-        }
-      }));
+      // Cache the store for future requests
+      console.log('Caching new store data');
+      await storeCache.set(store);
     }
 
     return {
       props: {
-        store,
+        store: JSON.parse(JSON.stringify(store)),
         affiliateId: affiliateId || null
       }
     };
