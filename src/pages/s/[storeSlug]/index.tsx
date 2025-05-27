@@ -336,26 +336,16 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
   try {
     const storeSlug = params?.storeSlug as string;
     const affiliateId = query.aff as string;
-
-    // Force a fresh database fetch if there's a timestamp parameter
     const shouldRefresh = !!query.t;
-    
+
     // Get store from cache first, unless refresh is requested
     let store = !shouldRefresh ? await storeCache.get(storeSlug, 'slug') : null;
 
-    // If not in cache or refresh requested, get from database with all data
+    // If not in cache or refresh requested, get from database
     if (!store) {
       store = await prisma.store.findUnique({
         where: { slug: storeSlug },
-        select: {
-          id: true,
-          name: true,
-          slug: true,
-          description: true,
-          logo: true,
-          banner: true,
-          theme: true,
-          settings: true,
+        include: {
           products: {
             where: { isActive: true },
             include: {
@@ -380,7 +370,7 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
       if (!store) {
         return { notFound: true };
       }
-      
+
       // Cache the store for future requests
       await storeCache.set(store);
     } else {
@@ -422,32 +412,33 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
       store.products = [];
     }
 
-    // Ensure sections exist in settings
-    if (!store.settings?.sections) {
-      store.settings = {
-        ...store.settings,
-        sections: [
-          {
-            id: '1',
-            type: 'hero',
-            title: 'Welcome to our Store',
-            order: 0,
-            settings: {
-              subtitle: 'Discover our amazing products',
-              buttonText: 'Shop Now'
-            }
-          },
-          {
-            id: '2',
-            type: 'featuredProducts',
-            title: 'Featured Products',
-            order: 1,
-            settings: {
-              productCount: 3
-            }
+    // Ensure settings and sections exist
+    if (!store.settings) {
+      store.settings = {};
+    }
+
+    if (!store.settings.sections) {
+      store.settings.sections = [
+        {
+          id: '1',
+          type: 'hero',
+          title: 'Welcome to our Store',
+          order: 0,
+          settings: {
+            subtitle: 'Discover our amazing products',
+            buttonText: 'Shop Now'
           }
-        ]
-      };
+        },
+        {
+          id: '2',
+          type: 'featuredProducts',
+          title: 'Featured Products',
+          order: 1,
+          settings: {
+            productCount: 3
+          }
+        }
+      ];
     }
 
     // Handle custom commissions
