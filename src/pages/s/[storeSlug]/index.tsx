@@ -176,7 +176,9 @@ const StorePage: NextPage<Props> = ({ store, affiliateId }) => {
                 case 'hero':
                   return (
                     <div key={section.id} className="py-16 text-center">
-                      <h1 className="text-4xl font-bold text-gray-900 mb-4">{section.title}</h1>
+                      <h1 className="text-4xl font-bold text-gray-900 mb-4">
+                        {section.title || 'Welcome to our Store'}
+                      </h1>
                       {section.settings?.subtitle && (
                         <p className="text-xl text-gray-600 mb-8">{section.settings.subtitle}</p>
                       )}

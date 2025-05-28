@@ -49,7 +49,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         settings: {
           ...(store.settings as object || {}),
           ...(settings || {}),
-          sections: sections || undefined
+          sections: settings?.sections ? settings.sections.map((section: any) => ({
+            id: section.id,
+            type: section.type,
+            title: section.title || '',
+            content: section.content || '',
+            order: section.order || 0,
+            settings: {
+              ...section.settings,
+              subtitle: section.settings?.subtitle || '',
+              buttonText: section.settings?.buttonText || 'Shop Now'
+            }
+          })) : undefined
         }
       }
     });

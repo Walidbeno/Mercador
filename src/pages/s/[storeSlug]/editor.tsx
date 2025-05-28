@@ -162,6 +162,20 @@ const StoreEditor: NextPage<Props> = ({ store, ownerToken }) => {
     try {
       console.log('Starting save process with sections:', sections);
       
+      // Prepare sections data by ensuring proper structure
+      const preparedSections = sections.map(section => ({
+        id: section.id,
+        type: section.type,
+        title: section.title || '',
+        content: section.content || '',
+        order: section.order || 0,
+        settings: {
+          ...section.settings,
+          subtitle: section.settings?.subtitle || '',
+          buttonText: section.settings?.buttonText || 'Shop Now'
+        }
+      }));
+      
       const updatedStore = {
         name: currentStore.name,
         description: currentStore.description,
@@ -175,10 +189,7 @@ const StoreEditor: NextPage<Props> = ({ store, ownerToken }) => {
         settings: {
           ...currentStore.settings,
           logoSize,
-          sections: sections.map(section => ({
-            ...section,
-            order: section.order || 0
-          }))
+          sections: preparedSections
         }
       };
 
@@ -549,6 +560,19 @@ const StoreEditor: NextPage<Props> = ({ store, ownerToken }) => {
                                         {/* Hero section */}
                                         {section.type === SECTION_TYPES.HERO && (
                                           <div className="space-y-4">
+                                            <div>
+                                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                Hero Title
+                                              </label>
+                                              <input
+                                                type="text"
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
+                                                value={section.title || ''}
+                                                onChange={(e) => updateSection(section.id, { 
+                                                  title: e.target.value 
+                                                })}
+                                              />
+                                            </div>
                                             <div>
                                               <label className="block text-sm font-medium text-gray-700 mb-1">
                                                 Hero Subtitle
