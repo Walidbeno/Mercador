@@ -351,8 +351,11 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
     // If not in cache or refresh requested, get from database
     if (!store) {
       console.log('Fetching fresh store data from database');
-      store = await prisma.store.findUnique({
-        where: { slug: storeSlug },
+      store = await prisma.store.findFirst({
+        where: { 
+          slug: storeSlug,
+          isActive: true
+        },
         include: {
           products: {
             where: { isActive: true },

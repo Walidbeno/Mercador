@@ -674,8 +674,11 @@ export const getServerSideProps: GetServerSideProps = async ({ params, req }) =>
     // Always provide a dummy token for testing
     const ownerToken = 'dummy-token-for-testing';
 
-    const store = await prisma.store.findUnique({
-      where: { slug: storeSlug },
+    const store = await prisma.store.findFirst({
+      where: { 
+        slug: storeSlug,
+        isActive: true
+      },
       select: {
         id: true,
         name: true,

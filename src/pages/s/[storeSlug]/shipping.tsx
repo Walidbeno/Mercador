@@ -139,8 +139,11 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
   try {
     const storeSlug = params?.storeSlug as string;
 
-    const store = await prisma.store.findUnique({
-      where: { slug: storeSlug },
+    const store = await prisma.store.findFirst({
+      where: { 
+        slug: storeSlug,
+        isActive: true
+      },
       select: {
         id: true,
         name: true,

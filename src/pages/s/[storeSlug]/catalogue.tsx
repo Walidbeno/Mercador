@@ -289,8 +289,11 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
 
     console.log(`Catalogue page request: storeSlug=${storeSlug}, affiliateId=${affiliateId || 'none'}`);
 
-    const store = await prisma.store.findUnique({
-      where: { slug: storeSlug },
+    const store = await prisma.store.findFirst({
+      where: { 
+        slug: storeSlug,
+        isActive: true
+      },
       include: {
         products: {
           where: { isActive: true },
