@@ -171,111 +171,112 @@ const StorePage: NextPage<Props> = ({ store, affiliateId }) => {
 
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
             {/* Render Store Sections */}
-            {store.settings?.sections?.sort((a, b) => a.order - b.order).map(section => {
-              switch (section.type) {
-                case 'hero':
-                  return (
-                    <div key={section.id} className="py-16 text-center">
-                      <h1 className="text-4xl font-bold text-gray-900 mb-4">
-                        {section.title || 'Welcome to our Store'}
-                      </h1>
-                      {section.settings?.subtitle && (
-                        <p className="text-xl text-gray-600 mb-8">{section.settings.subtitle}</p>
-                      )}
-                      <a 
-                        href="#featured-products"
-                        className="inline-block bg-indigo-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-indigo-700 transition-colors"
-                      >
-                        {section.settings?.buttonText || 'Shop Now'}
-                      </a>
-                    </div>
-                  );
-                
-                case 'featuredProducts':
-                  return (
-                    <div key={section.id} id="featured-products" className="py-12">
-                      <h2 className="text-2xl font-bold text-gray-900 mb-6">{section.title}</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {store.products
-                    .filter(p => p.featured)
-                          .slice(0, section.settings?.productCount || 3)
-                    .map(({ id, product }) => (
-                      <a 
-                        key={id} 
-                        href={`/s/${store.slug}/p/${product.id}${affiliateId ? `?aff=${affiliateId}` : ''}`}
-                        className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow duration-200"
-                      >
-                        <div className="h-48 rounded-t-lg overflow-hidden">
-                          <img 
-                            src={product.imageUrl || product.thumbnailUrl || '/images/placeholder.jpg'} 
-                            alt={product.title}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <div className="p-4">
-                          <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                            {product.title}
-                          </h3>
-                          <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                            {product.shortDescription || product.description}
-                          </p>
-                          <div className="flex justify-between items-center">
-                            <span className="text-xl font-bold text-gray-900">
-                                    {formatPrice(calculateTotalPrice(toNumber(product.basePrice), toNumber(product.commissionRate)))}
-                            </span>
-                            {product.hasCustomCommission && (
-                              <span className="ml-2 bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
-                                Custom
-                              </span>
-                            )}
-                          </div>
-                        </div>
+            {store.settings?.sections && Array.isArray(store.settings.sections) ? 
+              store.settings.sections.sort((a, b) => a.order - b.order).map(section => {
+                switch (section.type) {
+                  case 'hero':
+                    return (
+                      <div key={section.id} className="py-16 text-center">
+                        <h1 className="text-4xl font-bold text-gray-900 mb-4">
+                          {section.title || 'Welcome to our Store'}
+                        </h1>
+                        {section.settings?.subtitle && (
+                          <p className="text-xl text-gray-600 mb-8">{section.settings.subtitle}</p>
+                        )}
+                        <a 
+                          href="#featured-products"
+                          className="inline-block bg-indigo-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-indigo-700 transition-colors"
+                        >
+                          {section.settings?.buttonText || 'Shop Now'}
+                        </a>
+                      </div>
+                    );
+                  
+                  case 'featuredProducts':
+                    return (
+                      <div key={section.id} id="featured-products" className="py-12">
+                        <h2 className="text-2xl font-bold text-gray-900 mb-6">{section.title}</h2>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                          {store.products && Array.isArray(store.products) ? store.products
+                            .filter(p => p.featured)
+                            .slice(0, section.settings?.productCount || 3)
+                            .map(({ id, product }) => (
+                              <a 
+                                key={id} 
+                                href={`/s/${store.slug}/p/${product.id}${affiliateId ? `?aff=${affiliateId}` : ''}`}
+                                className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow duration-200"
+                              >
+                                <div className="h-48 rounded-t-lg overflow-hidden">
+                                  <img 
+                                    src={product.imageUrl || product.thumbnailUrl || '/images/placeholder.jpg'} 
+                                    alt={product.title}
+                                    className="w-full h-full object-cover"
+                                  />
+                                </div>
+                                <div className="p-4">
+                                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                                    {product.title}
+                                  </h3>
+                                  <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                                    {product.shortDescription || product.description}
+                                  </p>
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-xl font-bold text-gray-900">
+                                      {formatPrice(calculateTotalPrice(toNumber(product.basePrice), toNumber(product.commissionRate)))}
+                                    </span>
+                                    {product.hasCustomCommission && (
+                                      <span className="ml-2 bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
+                                        Custom
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
 
-                        {/* Add Order Now button */}
-                        <div className="px-4 pb-4 mt-2">
-                          <a 
-                            href={`/s/${store.slug}/p/${product.id}${affiliateId ? `?aff=${affiliateId}` : ''}`}
-                            className="block w-full bg-indigo-600 text-white text-center py-3 rounded-lg font-medium hover:bg-indigo-700 transition-colors shadow-sm hover:shadow"
-                          >
-                            {getTranslation(storeLanguage, 'orderNowButton')} →
-                          </a>
+                                {/* Add Order Now button */}
+                                <div className="px-4 pb-4 mt-2">
+                                  <a 
+                                    href={`/s/${store.slug}/p/${product.id}${affiliateId ? `?aff=${affiliateId}` : ''}`}
+                                    className="block w-full bg-indigo-600 text-white text-center py-3 rounded-lg font-medium hover:bg-indigo-700 transition-colors shadow-sm hover:shadow"
+                                  >
+                                    {getTranslation(storeLanguage, 'orderNowButton')} →
+                                  </a>
+                                </div>
+                              </a>
+                            )) : null}
                         </div>
-                      </a>
-                    ))}
-                </div>
-              </div>
-                  );
-                
-                case 'about':
-                  return (
-                    <div key={section.id} className="py-12">
-                      <h2 className="text-2xl font-bold text-gray-900 mb-6">{section.title}</h2>
-                      <div className="prose prose-lg max-w-none">
-                        {section.content}
                       </div>
-                    </div>
-                  );
-                
-                case 'custom':
-                  return (
-                    <div key={section.id} className="py-12">
-                      <h2 className="text-2xl font-bold text-gray-900 mb-6">{section.title}</h2>
-                      <div className="prose prose-lg max-w-none">
-                        {section.content}
+                    );
+                  
+                  case 'about':
+                    return (
+                      <div key={section.id} className="py-12">
+                        <h2 className="text-2xl font-bold text-gray-900 mb-6">{section.title}</h2>
+                        <div className="prose prose-lg max-w-none">
+                          {section.content}
+                        </div>
                       </div>
-                    </div>
-                  );
-                
-                default:
-                  return null;
-              }
-            })}
+                    );
+                  
+                  case 'custom':
+                    return (
+                      <div key={section.id} className="py-12">
+                        <h2 className="text-2xl font-bold text-gray-900 mb-6">{section.title}</h2>
+                        <div className="prose prose-lg max-w-none">
+                          {section.content}
+                        </div>
+                      </div>
+                    );
+                  
+                  default:
+                    return null;
+                }
+              }) : null}
 
             {/* All Products */}
             <div className="py-12">
               <h2 className="text-2xl font-bold text-gray-900 mb-6">All Products</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {store.products.map(({ id, product }) => (
+                {store.products && Array.isArray(store.products) ? store.products.map(({ id, product }) => (
                   <a 
                     key={id} 
                     href={`/s/${store.slug}/p/${product.id}${affiliateId ? `?aff=${affiliateId}` : ''}`}
@@ -317,7 +318,11 @@ const StorePage: NextPage<Props> = ({ store, affiliateId }) => {
                       </a>
                     </div>
                   </a>
-                ))}
+                )) : (
+                  <div className="text-center py-8 text-gray-500">
+                    No products available in this store.
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -347,6 +352,19 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
     let store = !shouldRefresh ? await storeCache.get(storeSlug, 'slug') : null;
     
     console.log('Store from cache:', store ? 'Found' : 'Not found');
+    
+    if (store) {
+      console.log('Cached store structure check:');
+      console.log('- Has products:', !!store.products, 'Type:', Array.isArray(store.products) ? 'Array' : typeof store.products);
+      console.log('- Has settings:', !!store.settings);
+      console.log('- Has sections:', !!store.settings?.sections, 'Type:', Array.isArray(store.settings?.sections) ? 'Array' : typeof store.settings?.sections);
+      
+      // If cached store is missing products or has incomplete structure, refetch from database
+      if (!store.products || !Array.isArray(store.products)) {
+        console.log('Cached store missing products array, refetching from database');
+        store = null;
+      }
+    }
 
     // If not in cache or refresh requested, get from database
     if (!store) {
