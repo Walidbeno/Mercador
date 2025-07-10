@@ -52,7 +52,7 @@ const ProductPage: NextPage<Props> = ({ store, product, affiliateId, hasCustomCo
     const logTrackingEvent = async () => {
       try {
         const eventData = {
-          event: 'product_view',
+          eventType: 'product_view',
           storeId: store.id,
           storeName: store.name,
           productId: product.id,
@@ -61,10 +61,7 @@ const ProductPage: NextPage<Props> = ({ store, product, affiliateId, hasCustomCo
           commissionRate: product.commissionRate,
           hasCustomCommission,
           affiliateId: affiliateId,
-          url: window.location.href,
-          timestamp: new Date().toISOString(),
-          referrer: document.referrer,
-          userAgent: window.navigator.userAgent
+          timestamp: new Date().toISOString()
         };
 
         console.log('Sending tracking event:', eventData);

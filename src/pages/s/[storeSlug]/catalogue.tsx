@@ -69,15 +69,11 @@ const CataloguePage: NextPage<Props> = ({ store, affiliateId }) => {
     const logTrackingEvent = async () => {
       try {
         const eventData = {
-          event: 'catalogue_view',
+          eventType: 'catalogue_view',
           storeId: store.id,
           storeName: store.name,
           affiliateId: affiliateId,
-          productCount: store.products.length,
-          url: window.location.href,
-          timestamp: new Date().toISOString(),
-          referrer: document.referrer,
-          userAgent: window.navigator.userAgent
+          timestamp: new Date().toISOString()
         };
 
         console.log('Sending tracking event:', eventData);
