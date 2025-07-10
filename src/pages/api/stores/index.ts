@@ -32,12 +32,13 @@ async function handleCreateStore(req: NextApiRequest, res: NextApiResponse) {
       theme,
       settings,
       ownerId,
+      affiliateId, // Add affiliateId to the request body
     } = req.body;
 
     // Validate required fields
-    if (!name || !ownerId) {
+    if (!name || !ownerId || !affiliateId) {
       return res.status(400).json({ 
-        error: 'Name and ownerId are required' 
+        error: 'Name, ownerId, and affiliateId are required' 
       });
     }
 
@@ -56,6 +57,7 @@ async function handleCreateStore(req: NextApiRequest, res: NextApiResponse) {
         theme,
         settings,
         ownerId,
+        affiliateId, // Add affiliateId to store creation
         isActive: true
       }
     });

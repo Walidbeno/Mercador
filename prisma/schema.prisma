@@ -104,6 +104,7 @@ model Store {
   theme       Json?     // Store theme settings
   settings    Json?     // Store settings (currency, language, etc)
   ownerId     String    // User ID from Mercacio APP
+  affiliateId String?   // Affiliate who created/owns this store
   isActive    Boolean   @default(true)
   products    StoreProduct[]
   carts       Cart[]
@@ -111,6 +112,7 @@ model Store {
   updatedAt   DateTime  @updatedAt @map("updated_at")
 
   @@index([ownerId])
+  @@index([affiliateId])
   @@map("stores")
 }
 

@@ -33,6 +33,7 @@ interface Store {
     language: string;
     logoSize?: number;
   };
+  affiliateId: string | null;  // Add this field
   products: StoreProduct[];
 }
 
@@ -72,7 +73,7 @@ const CataloguePage: NextPage<Props> = ({ store, affiliateId }) => {
           eventType: 'catalogue_view',
           storeId: store.id,
           storeName: store.name,
-          affiliateId: affiliateId,
+          affiliateId: affiliateId || store.affiliateId || null,
           timestamp: new Date().toISOString()
         };
 

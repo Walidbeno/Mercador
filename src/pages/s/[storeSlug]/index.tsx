@@ -48,6 +48,7 @@ interface Store {
     }>;
     logoSize?: number;
   };
+  affiliateId: string | null;  // Add this field
   products: StoreProduct[];
 }
 
@@ -77,7 +78,7 @@ const StorePage: NextPage<Props> = ({ store, affiliateId }) => {
           eventType: 'store_view',
           storeId: store.id,
           storeName: store.name,
-          affiliateId: affiliateId,
+          affiliateId: affiliateId || store.affiliateId || null,
           timestamp: new Date().toISOString()
         };
 

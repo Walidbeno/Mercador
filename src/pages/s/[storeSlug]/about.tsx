@@ -2,6 +2,7 @@ import { GetServerSideProps, NextPage } from 'next';
 import prisma from '@/lib/prisma';
 import Layout from '@/components/Layout';
 import { getTranslation } from '@/lib/translations';
+import { useEffect } from 'react';
 
 interface Store {
   id: string;
@@ -18,11 +19,46 @@ interface Store {
 
 interface Props {
   store: Store;
+  affiliateId: string | null;
 }
 
-const AboutPage: NextPage<Props> = ({ store }) => {
+const AboutPage: NextPage<Props> = ({ store, affiliateId }) => {
   // Get store language from settings or default to English
   const storeLanguage = store.settings?.language || 'en';
+
+  // Add tracking event logging
+  useEffect(() => {
+    const logTrackingEvent = async () => {
+      try {
+        const eventData = {
+          eventType: 'about_view',
+          storeId: store.id,
+          storeName: store.name,
+          affiliateId: affiliateId,
+          timestamp: new Date().toISOString()
+        };
+
+        console.log('Sending tracking event:', eventData);
+
+        const response = await fetch('https://www.mercacio.store/api/events', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(eventData),
+          credentials: 'include',
+          mode: 'cors'
+        });
+
+        const result = await response.json();
+        console.log('Tracking response:', result);
+      } catch (error) {
+        console.error('Error sending tracking event:', error);
+      }
+    };
+
+    logTrackingEvent();
+  }, [store.id, store.name, affiliateId]);
 
   return (
     <Layout title={`${getTranslation(storeLanguage, 'aboutPageTitle')} | ${store.name}`}>
@@ -163,9 +199,10 @@ const AboutPage: NextPage<Props> = ({ store }) => {
   );
 };
 
-export const getServerSideProps: GetServerSideProps = async ({ params }) => {
+export const getServerSideProps: GetServerSideProps = async ({ params, query }) => {
   try {
     const storeSlug = params?.storeSlug as string;
+    const affiliateId = query.aff as string;
 
     const store = await prisma.store.findFirst({
       where: { 
@@ -190,7 +227,8 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
 
     return {
       props: {
-        store
+        store,
+        affiliateId: affiliateId || null
       }
     };
   } catch (error) {

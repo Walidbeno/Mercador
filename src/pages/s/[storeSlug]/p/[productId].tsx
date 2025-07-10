@@ -27,6 +27,7 @@ interface Store {
     language: string;
     logoSize?: number;
   };
+  affiliateId: string | null;  // Add this field
 }
 
 interface Props {
@@ -60,7 +61,7 @@ const ProductPage: NextPage<Props> = ({ store, product, affiliateId, hasCustomCo
           basePrice: product.basePrice,
           commissionRate: product.commissionRate,
           hasCustomCommission,
-          affiliateId: affiliateId,
+          affiliateId: affiliateId || store.affiliateId || null,
           timestamp: new Date().toISOString()
         };
 
@@ -397,7 +398,8 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
             name: true,
             slug: true,
             logo: true,
-            settings: true
+            settings: true,
+            affiliateId: true // Include affiliateId here
           }
         },
         product: {
