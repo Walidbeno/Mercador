@@ -69,6 +69,43 @@ const StorePage: NextPage<Props> = ({ store, affiliateId }) => {
   const storeLanguage = store.settings?.language || 'en';
   const [isOwner, setIsOwner] = useState(false);
 
+  // Add tracking event logging
+  useEffect(() => {
+    const logTrackingEvent = async () => {
+      try {
+        const eventData = {
+          event: 'store_view',
+          storeId: store.id,
+          storeName: store.name,
+          affiliateId: affiliateId,
+          url: window.location.href,
+          timestamp: new Date().toISOString(),
+          referrer: document.referrer,
+          userAgent: window.navigator.userAgent
+        };
+
+        console.log('Sending tracking event:', eventData);
+
+        const response = await fetch('https://www.mercacio.store/api/events', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(eventData),
+          credentials: 'include',
+          mode: 'cors'
+        });
+
+        const result = await response.json();
+        console.log('Tracking response:', result);
+      } catch (error) {
+        console.error('Error sending tracking event:', error);
+      }
+    };
+
+    logTrackingEvent();
+  }, [store.id, store.name, affiliateId]);
+
   // Helper function to calculate total price
   const calculateTotalPrice = (basePrice: number, commissionRate: number) => {
     return basePrice + commissionRate;

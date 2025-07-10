@@ -47,6 +47,48 @@ const ProductPage: NextPage<Props> = ({ store, product, affiliateId, hasCustomCo
   const router = useRouter();
   const [isOwner, setIsOwner] = useState(false);
 
+  // Add tracking event logging
+  useEffect(() => {
+    const logTrackingEvent = async () => {
+      try {
+        const eventData = {
+          event: 'product_view',
+          storeId: store.id,
+          storeName: store.name,
+          productId: product.id,
+          productTitle: product.title,
+          basePrice: product.basePrice,
+          commissionRate: product.commissionRate,
+          hasCustomCommission,
+          affiliateId: affiliateId,
+          url: window.location.href,
+          timestamp: new Date().toISOString(),
+          referrer: document.referrer,
+          userAgent: window.navigator.userAgent
+        };
+
+        console.log('Sending tracking event:', eventData);
+
+        const response = await fetch('https://www.mercacio.store/api/events', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(eventData),
+          credentials: 'include',
+          mode: 'cors'
+        });
+
+        const result = await response.json();
+        console.log('Tracking response:', result);
+      } catch (error) {
+        console.error('Error sending tracking event:', error);
+      }
+    };
+
+    logTrackingEvent();
+  }, [store.id, store.name, product.id, product.title, product.basePrice, product.commissionRate, hasCustomCommission, affiliateId]);
+
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat(store.settings?.language || 'en', {
       style: 'currency',

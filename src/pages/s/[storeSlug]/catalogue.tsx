@@ -3,6 +3,7 @@ import prisma from '@/lib/prisma';
 import Layout from '@/components/Layout';
 import { getTranslation } from '@/lib/translations';
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/router';
 
 interface StoreProduct {
   id: string;
@@ -41,8 +42,9 @@ interface Props {
 }
 
 const CataloguePage: NextPage<Props> = ({ store, affiliateId }) => {
-  // Get store language from settings or default to English
+  const router = useRouter();
   const storeLanguage = store.settings?.language || 'en';
+  const [isOwner, setIsOwner] = useState(false);
   
   // Add state for the test affiliate ID
   const [testAffiliateId, setTestAffiliateId] = useState('');
@@ -61,6 +63,44 @@ const CataloguePage: NextPage<Props> = ({ store, affiliateId }) => {
       });
     }
   }, [affiliateId]);
+
+  // Add tracking event logging
+  useEffect(() => {
+    const logTrackingEvent = async () => {
+      try {
+        const eventData = {
+          event: 'catalogue_view',
+          storeId: store.id,
+          storeName: store.name,
+          affiliateId: affiliateId,
+          productCount: store.products.length,
+          url: window.location.href,
+          timestamp: new Date().toISOString(),
+          referrer: document.referrer,
+          userAgent: window.navigator.userAgent
+        };
+
+        console.log('Sending tracking event:', eventData);
+
+        const response = await fetch('https://www.mercacio.store/api/events', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(eventData),
+          credentials: 'include',
+          mode: 'cors'
+        });
+
+        const result = await response.json();
+        console.log('Tracking response:', result);
+      } catch (error) {
+        console.error('Error sending tracking event:', error);
+      }
+    };
+
+    logTrackingEvent();
+  }, [store.id, store.name, store.products.length, affiliateId]);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat(store.settings?.language || 'en', {
