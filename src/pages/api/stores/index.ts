@@ -2,6 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '@/lib/prisma';
 import { randomUUID } from 'crypto';
 import { storeCache } from '@/lib/redis';
+import { Prisma } from '@prisma/client';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   switch (req.method) {
@@ -36,30 +37,67 @@ async function handleCreateStore(req: NextApiRequest, res: NextApiResponse) {
     } = req.body;
 
     // Validate required fields
-    if (!name || !ownerId || !affiliateId) {
+    if (!name || !ownerId) {
       return res.status(400).json({ 
-        error: 'Name, ownerId, and affiliateId are required' 
+        error: 'Name and ownerId are required' 
       });
     }
 
     // Generate a UUID for both id and slug
     const storeId = randomUUID();
 
-    // Create store with the generated UUID
+    // Default theme and settings
+    const defaultTheme = {
+      layout: "default",
+      fontFamily: "Inter",
+      primaryColor: "#e01b24",
+      secondaryColor: "#ffffff"
+    } as const;
+
+    const defaultSettings = {
+      currency: 'EUR',
+      language: 'en',
+      logoSize: 150,
+      sections: [
+        {
+          id: '1',
+          type: 'hero',
+          title: 'Welcome to our Store',
+          order: 0,
+          settings: {
+            subtitle: 'Discover our amazing products',
+            buttonText: 'Shop Now'
+          }
+        },
+        {
+          id: '2',
+          type: 'featuredProducts',
+          title: 'Featured Products',
+          order: 1,
+          settings: {
+            productCount: 3
+          }
+        }
+      ]
+    } as const;
+
+    // Create store with the generated UUID and default values
+    const storeData: Prisma.StoreUncheckedCreateInput = {
+      id: storeId,
+      name,
+      slug: storeId,
+      description: description || undefined,
+      logo: logo || undefined,
+      banner: banner || undefined,
+      theme: theme || defaultTheme,
+      settings: settings || defaultSettings,
+      ownerId,
+      affiliateId: affiliateId || undefined,
+      isActive: true
+    };
+
     const store = await prisma.store.create({
-      data: {
-        id: storeId,
-        name,
-        slug: storeId,
-        description,
-        logo,
-        banner,
-        theme,
-        settings,
-        ownerId,
-        affiliateId, // Add affiliateId to store creation
-        isActive: true
-      }
+      data: storeData
     });
 
     // Cache the new store
